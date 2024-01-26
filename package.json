@@ -1,0 +1,36 @@
+{
+  "name": "@coreamarine/tb-live",
+  "version": "1.0.0",
+  "description": "Library to work with TB-Lives devices (hydrophones and acoustic sensors of Thelma Biotel)",
+  "author": "CoreMarine",
+  "license": "MIT",
+  "homepage": "https://github.com/core-marine-dev/tb-live#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/core-marine-dev/tb-live.git"
+  },
+  "bugs": {
+    "url": "https://github.com/core-marine-dev/tb-live/issues"
+  },
+  "keywords": [
+    "hydrophone",
+    "acoustic sensor",
+    "acoustic detection",
+    "tb-live",
+    "thelma biotel"
+  ],
+  "main": "index.js",
+  "files": [
+    "./lib"
+  ],
+  "scripts": {
+    "test": "vitest"
+  },
+  "dependencies": {
+    "valibot": "^0.27.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2"
+  }
+}
