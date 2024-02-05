@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, INT8_MAX, INT8_MIN, UINT16_MAX, UINT32_MAX, UINT8_MAX } from './constants'
+import { FREQUENCY_MAX, FREQUENCY_MIN, INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, INT8_MAX, INT8_MIN, UINT16_MAX, UINT32_MAX, UINT8_MAX } from './constants'
 // COMMONS
 export const StringSchema = v.string()
 export const StringArraySchema = v.array(StringSchema)
@@ -61,12 +61,51 @@ export const BigUintSchema = v.bigint(
   [v.minValue(0n, 'It should be greater than 0n')]
 )
 // HARDWARE
-export const SerialNumberSchema = v.string(
-  'It should be a string',
+export const SerialNumberSchema = v.string('It should be a string', [
+  v.custom((input: string) => {
+    const num = Number(input)
+    return !Number.isNaN(num) && Number.isInteger(num) && num > -1
+  }, 'It should be a positive integer string number'),
+  v.minLength(6, 'It should have at least 6 digits'),
+  v.maxLength(7, 'It should have 7 digits at most')
+])
+
+export const FrequencySchema = v.number([
+  v.integer('It should be an integer'),
+  v.minValue(63, 'It should greater equal to 63'),
+  v.maxValue(77, 'It should lesser equal to 77')
+])
+
+export const EmitterSchema = v.object({
+  serialNumber: SerialNumberSchema,
+  frequency: Uint8Schema
+})
+
+export const ReceiverConfig = v.object(
+  {
+    serialNumber: SerialNumberSchema,
+    frequency: FrequencySchema,
+    emitters: v.array(EmitterSchema, [v.maxLength(3, 'It should be only three emitters as maximum')])
+  },
   [
-    v.custom((input: string) => {
-      const num = Number(input)
-      return !Number.isNaN(num) && Number.isInteger(num) && num > -1
-    }, 'It should be a positive integer string number')
+    v.forward(
+      v.custom(
+        ({ emitters }) => (new Set(emitters.map(emitter => emitter.frequency))).size === emitters.length,
+        'All emitters frequencies should be different between them'
+      ),
+      ['emitters']
+    ),
+    v.forward(
+      v.custom(
+        ({ frequency, emitters }) => emitters.map(emitter => emitter.frequency).filter(freq => [frequency - 2, frequency, frequency + 2].includes(freq)).length === emitters.length,
+        `All emitters frequencies should be equal to TB-Live frequency or ± 2 kHz`),
+      ['emitters']
+    ),
+    v.forward(
+      v.custom(
+        ({ emitters }) => emitters.map(emitter => emitter.frequency).every(freq => (freq >= FREQUENCY_MIN) && (freq <= FREQUENCY_MAX)),
+        `All emitters frequencies should be between ${FREQUENCY_MIN} and ${FREQUENCY_MAX} kHz`),
+      ['emitters']
+    )
   ]
 )

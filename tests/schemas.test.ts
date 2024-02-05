@@ -11,12 +11,16 @@ describe('Integers', () => {
     value = INT8_MIN - 10
     result = v.safeParse(Int8Schema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe(`It should be greater than ${INT8_MIN - 1}`)
+    if (!result.success) {
+      expect(result.issues[0].message).toBe(`It should be greater than ${INT8_MIN - 1}`)
+    }
     // More than max
     value = INT8_MAX + 10
     result = v.safeParse(Int8Schema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe(`It should be less than ${INT8_MAX + 1}`)
+    if (!result.success) {
+      expect(result.issues[0].message).toBe(`It should be less than ${INT8_MAX + 1}`)
+    }
   })
 
   test('Int16', () => {
@@ -26,12 +30,16 @@ describe('Integers', () => {
     value = INT16_MIN - 10
     result = v.safeParse(Int16Schema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe(`It should be greater than ${INT16_MIN - 1}`)
+    if (!result.success) {
+      expect(result.issues[0].message).toBe(`It should be greater than ${INT16_MIN - 1}`)
+    }
     // More than max
     value = INT16_MAX + 10
     result = v.safeParse(Int16Schema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe(`It should be less than ${INT16_MAX + 1}`)
+    if (!result.success) {
+      expect(result.issues[0].message).toBe(`It should be less than ${INT16_MAX + 1}`)
+    }
   })
 
   test('Int32', () => {
@@ -41,12 +49,16 @@ describe('Integers', () => {
     value = INT32_MIN - 10
     result = v.safeParse(Int32Schema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe(`It should be greater than ${INT32_MIN - 1}`)
+    if (!result.success) {
+      expect(result.issues[0].message).toBe(`It should be greater than ${INT32_MIN - 1}`)
+    }
     // More than max
     value = INT32_MAX + 10
     result = v.safeParse(Int32Schema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe(`It should be less than ${INT32_MAX + 1}`)
+    if (!result.success) {
+      expect(result.issues[0].message).toBe(`It should be less than ${INT32_MAX + 1}`)
+    }
   })
 })
 
@@ -58,12 +70,16 @@ describe('Unsigned Integers', () => {
     value = - 10
     result = v.safeParse(Uint8Schema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe('It should be greater than 0')
+    if (!result.success) {
+      expect(result.issues[0].message).toBe('It should be greater than 0')
+    }
     // More than max
     value = UINT8_MAX + 10
     result = v.safeParse(Uint8Schema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe(`It should be less than ${UINT8_MAX + 1}`)
+    if (!result.success) {
+      expect(result.issues[0].message).toBe(`It should be less than ${UINT8_MAX + 1}`)
+    }
   })
 
   test('Int16', () => {
@@ -73,12 +89,16 @@ describe('Unsigned Integers', () => {
     value = - 10
     result = v.safeParse(Uint16Schema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe('It should be greater than 0')
+    if (!result.success) {
+      expect(result.issues[0].message).toBe('It should be greater than 0')
+    }
     // More than max
     value = UINT16_MAX + 10
     result = v.safeParse(Uint16Schema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe(`It should be less than ${UINT16_MAX + 1}`)
+    if (!result.success) {
+      expect(result.issues[0].message).toBe(`It should be less than ${UINT16_MAX + 1}`)
+    }
   })
 
   test('Int32', () => {
@@ -88,12 +108,16 @@ describe('Unsigned Integers', () => {
     value = - 10
     result = v.safeParse(Uint32Schema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe('It should be greater than 0')
+    if (!result.success) {
+      expect(result.issues[0].message).toBe('It should be greater than 0')
+    }
     // More than max
     value = UINT32_MAX + 10
     result = v.safeParse(Uint32Schema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe(`It should be less than ${UINT32_MAX + 1}`)
+    if (!result.success) {
+      expect(result.issues[0].message).toBe(`It should be less than ${UINT32_MAX + 1}`)
+    }
   })
 
   test('BigUint', () => {
@@ -101,15 +125,42 @@ describe('Unsigned Integers', () => {
     const value = - 10n
     const result = v.safeParse(BigUintSchema, value)
     expect(result.success).toBeFalsy()
-    expect(result?.error?.message).toBe('It should be greater than 0n')
+    if (!result.success) {
+      expect(result.issues[0].message).toBe('It should be greater than 0n')
+    }
   })
 })
 
-test('Serial Numbers', () => {
-  expect(v.safeParse(SerialNumberSchema, 123).error?.message).toBe('It should be a string')
-  expect(v.safeParse(SerialNumberSchema, 'abc').error?.message).toBe('It should be a positive integer string number')
-  expect(v.safeParse(SerialNumberSchema, '12a').error?.message).toBe('It should be a positive integer string number')
-  expect(v.safeParse(SerialNumberSchema, '12.7').error?.message).toBe('It should be a positive integer string number')
-  expect(v.safeParse(SerialNumberSchema, '-12').error?.message).toBe('It should be a positive integer string number')
-  expect(v.safeParse(SerialNumberSchema, '12').success).toBeTruthy()
+describe('Serial Numbers', () => {
+  test('Non valid type of inputs', () => {
+    [
+      [123, 'It should be a string'],
+      ['abc', 'It should be a positive integer string number'],
+      ['12a', 'It should be a positive integer string number'],
+      ['12.7', 'It should be a positive integer string number'],
+      ['-12', 'It should be a positive integer string number'],
+    ].forEach(([serialNumber, message]) => {
+      const result = v.safeParse(SerialNumberSchema, serialNumber)
+      expect(result.success).toBeFalsy()
+      if (!result.success) {
+        expect(result.issues[0].message).toBe(message)
+      }
+    })
+  })
+
+  test('Non valid length', () => {
+    [
+      ['12345', 'It should have at least 6 digits'],
+      ['12345678', 'It should have 7 digits at most']
+    ].forEach(([serialNumber, message]) => {
+      const result = v.safeParse(SerialNumberSchema, serialNumber)
+      expect(result.success).toBeFalsy()
+      if (!result.success) {
+        expect(result.issues[0].message).toBe(message)
+      }
+    })
+  })
+  test('Valid values', () => {
+    ['123456', '1234567'].forEach(serialNumber => expect(v.parse(SerialNumberSchema, serialNumber)).toBe(serialNumber))
+  })
 })
