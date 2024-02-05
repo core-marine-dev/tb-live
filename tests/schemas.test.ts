@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 import { describe, test, expect } from 'vitest'
-import { INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, INT8_MAX, INT8_MIN, UINT16_MAX, UINT32_MAX, UINT8_MAX } from '../src/constants'
-import { BigUintSchema, Int16Schema, Int32Schema, Int8Schema, SerialNumberSchema, Uint16Schema, Uint32Schema, Uint8Schema } from '../src/schemas'
+import { FREQUENCY_MAX, FREQUENCY_MIN, INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, INT8_MAX, INT8_MIN, UINT16_MAX, UINT32_MAX, UINT8_MAX } from '../src/constants'
+import { BigUintSchema, FrequencySchema, Int16Schema, Int32Schema, Int8Schema, SerialNumberSchema, Uint16Schema, Uint32Schema, Uint8Schema } from '../src/schemas'
 
 describe('Integers', () => {
   test('Int8', () => {
@@ -163,4 +163,25 @@ describe('Serial Numbers', () => {
   test('Valid values', () => {
     ['123456', '1234567'].forEach(serialNumber => expect(v.parse(SerialNumberSchema, serialNumber)).toBe(serialNumber))
   })
+})
+
+test('Frequency', () => {
+  // Invalid values
+  [
+    [63.3, 'It should be an integer'],
+    [62, 'It should greater equal to 63'],
+    [78, 'It should lesser equal to 77']
+  ].forEach(([freq, message]) => {
+    const result = v.safeParse(FrequencySchema, freq)
+    expect(result.success).toBeFalsy()
+    if (!result.success) {
+      expect(result.issues[0].message).toBe(message)
+    }
+  });
+  // Valid values
+  [
+    63,
+    77,
+    Math.floor(Math.random() * (FREQUENCY_MAX - FREQUENCY_MIN + 1) + FREQUENCY_MIN)
+  ].forEach(freq => expect(v.safeParse(FrequencySchema, freq).success).toBeTruthy())
 })
