@@ -13,3 +13,6 @@ export const UINT_MIN = 0
 export const UINT8_MAX = Math.pow(2, 8) - 1
 export const UINT16_MAX = Math.pow(2, 16) - 1
 export const UINT32_MAX = Math.pow(2, 32) - 1
+// TB LIVE
+export const FREQUENCY_MIN = 63
+export const FREQUENCY_MAX = 77
