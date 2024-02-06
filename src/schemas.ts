@@ -81,13 +81,23 @@ export const EmitterSchema = v.object({
   frequency: Uint8Schema
 })
 
-export const ReceiverConfig = v.object(
+export const ReceiverConfigSchema = v.object(
   {
     serialNumber: SerialNumberSchema,
     frequency: FrequencySchema,
-    emitters: v.array(EmitterSchema, [v.maxLength(3, 'It should be only three emitters as maximum')])
+    emitters: v.array(EmitterSchema, [
+      v.minLength(1, 'It should be at least one emitter'),
+      v.maxLength(3, 'It should be only three emitters as maximum')
+    ])
   },
   [
+    v.forward(
+      v.custom(
+        ({ emitters }) => (new Set(emitters.map(emitter => emitter.serialNumber))).size === emitters.length,
+        'All emitters serial number should be different between them'
+      ),
+      ['emitters']
+    ),
     v.forward(
       v.custom(
         ({ emitters }) => (new Set(emitters.map(emitter => emitter.frequency))).size === emitters.length,
@@ -97,15 +107,15 @@ export const ReceiverConfig = v.object(
     ),
     v.forward(
       v.custom(
-        ({ frequency, emitters }) => emitters.map(emitter => emitter.frequency).filter(freq => [frequency - 2, frequency, frequency + 2].includes(freq)).length === emitters.length,
-        `All emitters frequencies should be equal to TB-Live frequency or ± 2 kHz`),
+        ({ emitters }) => emitters.map(emitter => emitter.frequency).every(freq => (freq >= FREQUENCY_MIN) && (freq <= FREQUENCY_MAX)),
+        `All emitters frequencies should be between ${FREQUENCY_MIN} and ${FREQUENCY_MAX} kHz`),
       ['emitters']
     ),
     v.forward(
       v.custom(
-        ({ emitters }) => emitters.map(emitter => emitter.frequency).every(freq => (freq >= FREQUENCY_MIN) && (freq <= FREQUENCY_MAX)),
-        `All emitters frequencies should be between ${FREQUENCY_MIN} and ${FREQUENCY_MAX} kHz`),
+        ({ frequency, emitters }) => emitters.map(emitter => emitter.frequency).filter(freq => [frequency - 2, frequency, frequency + 2].includes(freq)).length === emitters.length,
+        `All emitters frequencies should be equal to TB-Live frequency or ± 2 kHz`),
       ['emitters']
-    )
+    ),
   ]
 )

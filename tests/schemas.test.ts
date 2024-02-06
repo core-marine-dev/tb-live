@@ -1,7 +1,8 @@
 import * as v from 'valibot'
 import { describe, test, expect } from 'vitest'
 import { FREQUENCY_MAX, FREQUENCY_MIN, INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, INT8_MAX, INT8_MIN, UINT16_MAX, UINT32_MAX, UINT8_MAX } from '../src/constants'
-import { BigUintSchema, FrequencySchema, Int16Schema, Int32Schema, Int8Schema, SerialNumberSchema, Uint16Schema, Uint32Schema, Uint8Schema } from '../src/schemas'
+import { BigUintSchema, EmitterSchema, FrequencySchema, Int16Schema, Int32Schema, Int8Schema, ReceiverConfigSchema, SerialNumberSchema, Uint16Schema, Uint32Schema, Uint8Schema } from '../src/schemas'
+import { Emitter, ReceiverConfig } from '../src/types'
 
 describe('Integers', () => {
   test('Int8', () => {
@@ -184,4 +185,123 @@ test('Frequency', () => {
     77,
     Math.floor(Math.random() * (FREQUENCY_MAX - FREQUENCY_MIN + 1) + FREQUENCY_MIN)
   ].forEach(freq => expect(v.safeParse(FrequencySchema, freq).success).toBeTruthy())
+})
+
+test('Emitter', () => {
+  const emitter: Emitter = { serialNumber: '1234567', frequency: 70 }
+  expect(v.safeParse(EmitterSchema, emitter).success).toBeTruthy()
+})
+
+describe('ReceiverConfig', () => {
+  test('Invalid number of emitters', () => {
+    let receiver: ReceiverConfig = {
+      serialNumber: '1234567',
+      frequency: 70,
+      emitters: []
+    }
+    // None emitters
+    let result = v.safeParse(ReceiverConfigSchema, receiver)
+    expect(result.success).toBeFalsy()
+    if (!result.success) {
+      expect(result.issues[0].message).toBe('It should be at least one emitter')
+    }
+    // Invalid number of emitters
+    const emitters: Emitter[] = [
+      { serialNumber: '111111', frequency: 66 },
+      { serialNumber: '2222222', frequency: 66 },
+      { serialNumber: '333333', frequency: 66 },
+      { serialNumber: '4444444', frequency: 66 },
+    ]
+    receiver.emitters = emitters
+    result = v.safeParse(ReceiverConfigSchema, receiver)
+    expect(result.success).toBeFalsy()
+    if (!result.success) {
+      expect(result.issues[0].message).toBe('It should be only three emitters as maximum')
+    }
+  })
+
+  test('Invalid emitters', () => {
+    let receiver: ReceiverConfig = {
+      serialNumber: '1234567',
+      frequency: 70,
+      emitters: []
+    }
+    // Same emitters serial number
+    let emitters: Emitter[] = [
+      { serialNumber: '111111', frequency: 66 },
+      { serialNumber: '111111', frequency: 68 },
+      { serialNumber: '111111', frequency: 64 },
+    ]
+    receiver.emitters = emitters
+    let result = v.safeParse(ReceiverConfigSchema, receiver)
+    expect(result.success).toBeFalsy()
+    if (!result.success) {
+      expect(result.issues[0].message).toBe('All emitters serial number should be different between them')
+    }
+    // Same emitters frequencies
+    receiver.emitters = [
+      { serialNumber: '111111', frequency: 66 },
+      { serialNumber: '222222', frequency: 66 },
+      { serialNumber: '333333', frequency: 66 },
+    ]
+    result = v.safeParse(ReceiverConfigSchema, receiver)
+    expect(result.success).toBeFalsy()
+    if (!result.success) {
+      expect(result.issues[0].message).toBe('All emitters frequencies should be different between them')
+    }
+    // Frequencies should +- 2 KHz of receiver frequency
+    receiver.emitters = [
+      { serialNumber: '111111', frequency: 50 },
+      { serialNumber: '222222', frequency: 80 },
+      { serialNumber: '333333', frequency: 200 },
+    ]
+    result = v.safeParse(ReceiverConfigSchema, receiver)
+    expect(result.success).toBeFalsy()
+    if (!result.success) {
+      expect(result.issues[0].message).toBe(`All emitters frequencies should be between ${FREQUENCY_MIN} and ${FREQUENCY_MAX} kHz`)
+    }
+    // Frequencies should +- 2 KHz of receiver frequency
+    receiver.emitters = [
+      { serialNumber: '111111', frequency: 70 },
+      { serialNumber: '222222', frequency: 69 },
+      { serialNumber: '333333', frequency: 71 },
+    ]
+    result = v.safeParse(ReceiverConfigSchema, receiver)
+    expect(result.success).toBeFalsy()
+    if (!result.success) {
+      expect(result.issues[0].message).toBe('All emitters frequencies should be equal to TB-Live frequency or ± 2 kHz')
+    }
+  })
+
+  test('Valid emitters', () => {
+    let receiver: ReceiverConfig = {
+      serialNumber: '1234567',
+      frequency: 70,
+      emitters: []
+    }
+    // Three emitters
+    let emitters: Emitter[] = [
+      { serialNumber: '111111', frequency: 68 },
+      { serialNumber: '222222', frequency: 70 },
+      { serialNumber: '333333', frequency: 72 },
+    ]
+    receiver.emitters = emitters
+    let result = v.safeParse(ReceiverConfigSchema, receiver)
+    expect(result.success).toBeTruthy()
+    // two emitters
+    emitters.pop()
+    receiver.emitters = emitters
+    result = v.safeParse(ReceiverConfigSchema, receiver)
+    expect(result.success).toBeTruthy()
+    // one emitters
+    emitters.pop()
+    receiver.emitters = emitters
+    result = v.safeParse(ReceiverConfigSchema, receiver)
+    expect(result.success).toBeTruthy()
+    // none emitters
+    emitters.pop()
+    receiver.emitters = emitters
+    result = v.safeParse(ReceiverConfigSchema, receiver)
+    expect(result.success).toBeFalsy()
+  })
 })
