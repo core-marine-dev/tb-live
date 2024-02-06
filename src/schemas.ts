@@ -81,7 +81,7 @@ export const EmitterSchema = v.object({
   frequency: Uint8Schema
 })
 
-export const ReceiverConfigSchema = v.object(
+export const ReceiverSchema = v.object(
   {
     serialNumber: SerialNumberSchema,
     frequency: FrequencySchema,

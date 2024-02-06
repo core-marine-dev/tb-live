@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 import {
-  BigUintSchema, EmitterSchema, FrequencySchema, Int16Schema, Int32Schema, Int8Schema, ReceiverConfigSchema, SerialNumberSchema, Uint16Schema, Uint32Schema, Uint8Schema
+  BigUintSchema, EmitterSchema, FrequencySchema, Int16Schema, Int32Schema, Int8Schema, ReceiverSchema, SerialNumberSchema, Uint16Schema, Uint32Schema, Uint8Schema
 } from "./schemas";
 // INTEGERS
 export type Int8 = v.Input<typeof Int8Schema>
@@ -15,4 +15,4 @@ export type BigUint = v.Input<typeof BigUintSchema>
 export type SerialNumber = v.Input<typeof SerialNumberSchema>
 export type Frequency = v.Input<typeof FrequencySchema>
 export type Emitter = v.Input<typeof EmitterSchema>
-export type ReceiverConfig = v.Input<typeof ReceiverConfigSchema>
+export type Receiver = v.Input<typeof ReceiverSchema>
