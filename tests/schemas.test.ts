@@ -2,7 +2,7 @@ import * as v from 'valibot'
 import { describe, test, expect } from 'vitest'
 import { FREQUENCY_MAX, FREQUENCY_MIN, INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, INT8_MAX, INT8_MIN, UINT16_MAX, UINT32_MAX, UINT8_MAX } from '../src/constants'
 import { BigUintSchema, EmitterSchema, FrequencySchema, Int16Schema, Int32Schema, Int8Schema, ReceiverSchema, SerialNumberSchema, Uint16Schema, Uint32Schema, Uint8Schema } from '../src/schemas'
-import { Emitter, Receiver } from '../src/types'
+import { Emitter, Firmware, Receiver } from '../src/types'
 
 describe('Integers', () => {
   test('Int8', () => {
@@ -192,11 +192,12 @@ test('Emitter', () => {
   expect(v.safeParse(EmitterSchema, emitter).success).toBeTruthy()
 })
 
-describe('ReceiverConfig', () => {
+describe('Receiver', () => {
   test('Invalid number of emitters', () => {
     let receiver: Receiver = {
       serialNumber: '1234567',
       frequency: 70,
+      firmware: '1.0.1',
       emitters: []
     }
     // None emitters
@@ -224,6 +225,7 @@ describe('ReceiverConfig', () => {
     let receiver: Receiver = {
       serialNumber: '1234567',
       frequency: 70,
+      firmware: '1.0.1',
       emitters: []
     }
     // Same emitters serial number
@@ -273,10 +275,43 @@ describe('ReceiverConfig', () => {
     }
   })
 
+  test('Firmware', () => {
+    // Valid firmware
+    const receiver: Receiver = {
+      serialNumber: '1234567',
+      frequency: 70,
+      firmware: '1.0.1',
+      emitters: [
+        { serialNumber: '111111', frequency: 68 },
+        { serialNumber: '222222', frequency: 70 },
+        { serialNumber: '333333', frequency: 72 },
+      ]
+    }
+    expect(v.safeParse(ReceiverSchema, receiver).success).toBeTruthy()
+    receiver.firmware = '1.0.2'
+    expect(v.safeParse(ReceiverSchema, receiver).success).toBeTruthy();
+    // Invalid firmware
+    ['1.o.2', '102', 'true'].forEach(fw => {
+      receiver.firmware = fw as Firmware
+      const result = v.safeParse(ReceiverSchema, receiver)
+      expect(result.success).toBeFalsy()
+      if (!result.success) {
+        expect(result.issues[0].message).toBe('It should be "1.0.1" or "1.0.2"')
+      }
+    });
+    [102, true, {}].forEach(fw => {
+      receiver.firmware = fw as Firmware
+      const result = v.safeParse(ReceiverSchema, receiver)
+      expect(result.success).toBeFalsy()
+    })
+
+  })
+
   test('Valid emitters', () => {
     let receiver: Receiver = {
       serialNumber: '1234567',
       frequency: 70,
+      firmware: '1.0.1',
       emitters: []
     }
     // Three emitters

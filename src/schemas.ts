@@ -76,15 +76,20 @@ export const FrequencySchema = v.number([
   v.maxValue(77, 'It should lesser equal to 77')
 ])
 
+export const FirmwareSchema = v.picklist(['1.0.1', '1.0.2'], 'It should be "1.0.1" or "1.0.2"')
+
 export const EmitterSchema = v.object({
   serialNumber: SerialNumberSchema,
   frequency: Uint8Schema
 })
 
+
+
 export const ReceiverSchema = v.object(
   {
     serialNumber: SerialNumberSchema,
     frequency: FrequencySchema,
+    firmware: FirmwareSchema,
     emitters: v.array(EmitterSchema, [
       v.minLength(1, 'It should be at least one emitter'),
       v.maxLength(3, 'It should be only three emitters as maximum')
@@ -119,3 +124,4 @@ export const ReceiverSchema = v.object(
     ),
   ]
 )
+
