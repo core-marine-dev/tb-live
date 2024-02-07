@@ -2,7 +2,7 @@ import * as v from 'valibot'
 import { describe, test, expect } from 'vitest'
 import { FREQUENCY_MAX, FREQUENCY_MIN, INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, INT8_MAX, INT8_MIN, UINT16_MAX, UINT32_MAX, UINT8_MAX } from '../src/constants'
 import { BigUintSchema, EmitterSchema, FrequencySchema, Int16Schema, Int32Schema, Int8Schema, ReceiverSchema, SerialNumberSchema, Uint16Schema, Uint32Schema, Uint8Schema } from '../src/schemas'
-import { Emitter, Firmware, Receiver } from '../src/types'
+import { Emitter, Firmware, Mode, Receiver } from '../src/types'
 
 describe('Integers', () => {
   test('Int8', () => {
@@ -199,6 +199,7 @@ describe('Receiver', () => {
       serialNumber: '1234567',
       frequency: 70,
       firmware: '1.0.1',
+      mode: 'listening',
       emitters: []
     }
     // None emitters
@@ -227,6 +228,7 @@ describe('Receiver', () => {
       serialNumber: '1234567',
       frequency: 70,
       firmware: '1.0.1',
+      mode: 'listening',
       emitters: []
     }
     // Same emitters serial number
@@ -282,6 +284,7 @@ describe('Receiver', () => {
       serialNumber: '1234567',
       frequency: 70,
       firmware: '1.0.1',
+      mode: 'listening',
       emitters: [
         { serialNumber: '111111', frequency: 68 },
         { serialNumber: '222222', frequency: 70 },
@@ -305,7 +308,40 @@ describe('Receiver', () => {
       const result = v.safeParse(ReceiverSchema, receiver)
       expect(result.success).toBeFalsy()
     })
+  })
 
+  test('Mode', () => {
+    // Valid mode
+    const receiver: Receiver = {
+      serialNumber: '1234567',
+      frequency: 70,
+      firmware: '1.0.1',
+      mode: 'listening',
+      emitters: [
+        { serialNumber: '111111', frequency: 68 },
+        { serialNumber: '222222', frequency: 70 },
+        { serialNumber: '333333', frequency: 72 },
+      ]
+    }
+    expect(v.safeParse(ReceiverSchema, receiver).success).toBeTruthy()
+    receiver.mode = 'command'
+    expect(v.safeParse(ReceiverSchema, receiver).success).toBeTruthy();
+    receiver.mode = 'update'
+    expect(v.safeParse(ReceiverSchema, receiver).success).toBeTruthy();
+    // Invalid firmware
+    ['upgrade', 'cmd', 'true'].forEach(mode => {
+      receiver.mode = mode as Mode
+      const result = v.safeParse(ReceiverSchema, receiver)
+      expect(result.success).toBeFalsy()
+      if (!result.success) {
+        expect(result.issues[0].message).toBe('Mode: It should be "listening" or "command" or "update"')
+      }
+    });
+    [102, true, {}].forEach(mode => {
+      receiver.mode = mode as Mode
+      const result = v.safeParse(ReceiverSchema, receiver)
+      expect(result.success).toBeFalsy()
+    })
   })
 
   test('Valid emitters', () => {
@@ -313,6 +349,7 @@ describe('Receiver', () => {
       serialNumber: '1234567',
       frequency: 70,
       firmware: '1.0.1',
+      mode: 'listening',
       emitters: []
     }
     // Three emitters
