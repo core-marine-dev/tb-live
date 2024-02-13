@@ -1,5 +1,6 @@
 import * as v from 'valibot'
-import { FREQUENCY_MAX, FREQUENCY_MIN, INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, INT8_MAX, INT8_MIN, UINT16_MAX, UINT32_MAX, UINT8_MAX } from './constants'
+
+import { FIRMWARES_AVAILABLE, FREQUENCY_MAX, FREQUENCY_MIN, INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, INT8_MAX, INT8_MIN, MODES, PING_FLAG_END, PING_FLAG_LENGTH_MAX, PING_FLAG_LENGTH_MIN, PING_FLAG_START, UINT16_MAX, UINT32_MAX, UINT8_MAX } from './constants'
 // COMMONS
 export const StringSchema = v.string()
 export const StringArraySchema = v.array(StringSchema)
@@ -78,13 +79,9 @@ export const FrequencySchema = v.number(
     v.maxValue(77, 'Frequency: It should lesser equal to 77')
 ])
 
-const Firmware = ['1.0.1', '1.0.2'] as const
+export const FirmwareSchema = v.picklist(FIRMWARES_AVAILABLE, 'Firmware: It should be "1.0.1" or "1.0.2"')
 
-export const FirmwareSchema = v.picklist(Firmware, 'Firmware: It should be "1.0.1" or "1.0.2"')
-
-const Mode = ['listening', 'command', 'update'] as const
-
-export const ModeSchema = v.picklist(Mode, 'Mode: It should be "listening" or "command" or "update"')
+export const ModeSchema = v.picklist(MODES, 'Mode: It should be "listening" or "command" or "update"')
 
 export const EmitterSchema = v.object({
   serialNumber: SerialNumberSchema,
@@ -131,4 +128,22 @@ export const ReceiverSchema = v.object(
     ),
   ]
 )
+// FRAMES
+export const PingResponseInputSchema = v.string([
+  v.startsWith(PING_FLAG_START, `PingResponse: It should start with ${PING_FLAG_START}`),
+  v.endsWith(PING_FLAG_END, `PingResponse: It should end with ${PING_FLAG_END}`),
+  v.minLength(PING_FLAG_LENGTH_MIN, `PingResponse: It should have a minimal length of ${PING_FLAG_LENGTH_MIN}`),
+  v.maxLength(PING_FLAG_LENGTH_MAX, `PingResponse: It should have a maximal length of ${PING_FLAG_LENGTH_MAX}`),
+  v.custom(input => {
+    const sn = ((input.split(PING_FLAG_START))[1].split(PING_FLAG_END))[0]
+    return v.safeParse(SerialNumberSchema, sn).success
+  },   'PingResponse: It should contain a valid serial number')
+])
 
+export const PingResponseOutputSchema = v.transform(
+  PingResponseInputSchema,
+  (input: string) => {
+    const sn = ((input.split(PING_FLAG_START))[1].split(PING_FLAG_END))[0]
+    return v.parse(SerialNumberSchema, sn)
+  }
+)
