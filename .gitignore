@@ -1,3 +1,10 @@
+# Custom
+.vscode
+.idea
+.DS_Store
+nodered
+docs
+
 # Logs
 logs
 *.log
