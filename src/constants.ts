@@ -31,6 +31,7 @@ export const UPDATE_MODE = 'UF!'
 
 export const SAMPLE_FLAG_START = '$'
 export const SAMPLE_FLAG_END = '\r'
+export const SAMPLE_FLAG_SPLIT = ','
 
 export const PING_FLAG_START = 'SN='
 export const PING_FLAG_END = ' ><>\r'
@@ -39,3 +40,8 @@ export const PING_FLAG_LENGTH_MAX = PING_FLAG_START.length + PING_FLAG_END.lengt
 
 export const ROUND_CLOCK_FLAG = 'ack01\r'
 export const SET_CLOCK_FLAG = 'ack02\r'
+
+export const EMITTER_ANGLE_BIT_LENGTH = 10
+export const EMITTER_ANGLE_FACTOR = 10
+export const EMITTER_DEVIATION_BIT_LENGTH = 6
+export const EMITTER_DEVIATION_FACTOR = 4
