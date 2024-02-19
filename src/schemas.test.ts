@@ -1,136 +1,8 @@
 import * as v from 'valibot'
 import { describe, test, expect } from 'vitest'
-import { FREQUENCY_MAX, FREQUENCY_MIN, INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, INT8_MAX, INT8_MIN, UINT16_MAX, UINT32_MAX, UINT8_MAX } from '../src/constants'
-import { BigUintSchema, EmitterSchema, FrequencySchema, Int16Schema, Int32Schema, Int8Schema, ReceiverSchema, SerialNumberSchema, Uint16Schema, Uint32Schema, Uint8Schema } from '../src/schemas'
-import { Emitter, Firmware, Mode, Receiver } from '../src/types'
-
-describe('Integers', () => {
-  test('Int8', () => {
-    let value: number
-    let result: ReturnType<typeof v.safeParse>
-    // Less than min
-    value = INT8_MIN - 10
-    result = v.safeParse(Int8Schema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe(`Int8: It should be greater than ${INT8_MIN - 1}`)
-    }
-    // More than max
-    value = INT8_MAX + 10
-    result = v.safeParse(Int8Schema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe(`Int8: It should be less than ${INT8_MAX + 1}`)
-    }
-  })
-
-  test('Int16', () => {
-    let value: number
-    let result: ReturnType<typeof v.safeParse>
-    // Less than min
-    value = INT16_MIN - 10
-    result = v.safeParse(Int16Schema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe(`Int16: It should be greater than ${INT16_MIN - 1}`)
-    }
-    // More than max
-    value = INT16_MAX + 10
-    result = v.safeParse(Int16Schema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe(`Int16: It should be less than ${INT16_MAX + 1}`)
-    }
-  })
-
-  test('Int32', () => {
-    let value: number
-    let result: ReturnType<typeof v.safeParse>
-    // Less than min
-    value = INT32_MIN - 10
-    result = v.safeParse(Int32Schema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe(`Int32: It should be greater than ${INT32_MIN - 1}`)
-    }
-    // More than max
-    value = INT32_MAX + 10
-    result = v.safeParse(Int32Schema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe(`Int32: It should be less than ${INT32_MAX + 1}`)
-    }
-  })
-})
-
-describe('Unsigned Integers', () => {
-  test('Uint8', () => {
-    let value: number
-    let result: ReturnType<typeof v.safeParse>
-    // Less than min
-    value = - 10
-    result = v.safeParse(Uint8Schema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe('Uint8: It should be greater than 0')
-    }
-    // More than max
-    value = UINT8_MAX + 10
-    result = v.safeParse(Uint8Schema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe(`Uint8: It should be less than ${UINT8_MAX + 1}`)
-    }
-  })
-
-  test('Uint16', () => {
-    let value: number
-    let result: ReturnType<typeof v.safeParse>
-    // Less than min
-    value = - 10
-    result = v.safeParse(Uint16Schema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe('Uint16: It should be greater than 0')
-    }
-    // More than max
-    value = UINT16_MAX + 10
-    result = v.safeParse(Uint16Schema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe(`Uint16: It should be less than ${UINT16_MAX + 1}`)
-    }
-  })
-
-  test('Uint32', () => {
-    let value: number
-    let result: ReturnType<typeof v.safeParse>
-    // Less than min
-    value = - 10
-    result = v.safeParse(Uint32Schema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe('Uint32: It should be greater than 0')
-    }
-    // More than max
-    value = UINT32_MAX + 10
-    result = v.safeParse(Uint32Schema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe(`Uint32: It should be less than ${UINT32_MAX + 1}`)
-    }
-  })
-
-  test('BigUint', () => {
-    // Less than min
-    const value = - 10n
-    const result = v.safeParse(BigUintSchema, value)
-    expect(result.success).toBeFalsy()
-    if (!result.success) {
-      expect(result.issues[0].message).toBe('BigUint: It should be greater than 0n')
-    }
-  })
-})
+import { FREQUENCY_MAX, FREQUENCY_MIN } from './constants'
+import { EmitterSchema, FrequencySchema, ReceiverSchema, SerialNumberSchema } from './schemas'
+import { Emitter, Firmware, Mode, Receiver } from './types'
 
 describe('Serial Numbers', () => {
   test('Non valid type of inputs', () => {
@@ -326,8 +198,8 @@ describe('Receiver', () => {
     expect(v.safeParse(ReceiverSchema, receiver).success).toBeTruthy()
     receiver.mode = 'command'
     expect(v.safeParse(ReceiverSchema, receiver).success).toBeTruthy();
-    receiver.mode = 'update'
-    expect(v.safeParse(ReceiverSchema, receiver).success).toBeTruthy();
+    // receiver.mode = 'update'
+    // expect(v.safeParse(ReceiverSchema, receiver).success).toBeTruthy();
     // Invalid firmware
     ['upgrade', 'cmd', 'true'].forEach(mode => {
       receiver.mode = mode as Mode

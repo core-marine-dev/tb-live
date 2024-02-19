@@ -1,66 +1,13 @@
 import * as v from 'valibot'
 
-import { FIRMWARES_AVAILABLE, FREQUENCY_MAX, FREQUENCY_MIN, INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN, INT8_MAX, INT8_MIN, MODES, PING_FLAG_END, PING_FLAG_LENGTH_MAX, PING_FLAG_LENGTH_MIN, PING_FLAG_START, UINT16_MAX, UINT32_MAX, UINT8_MAX } from './constants'
+import { FIRMWARES_AVAILABLE, FREQUENCY_MAX, FREQUENCY_MIN, MODES, PING_FLAG_END, PING_FLAG_LENGTH_MAX, PING_FLAG_LENGTH_MIN, PING_FLAG_START } from './constants'
+import { Uint8Schema } from '@schemasjs/valibot-numbers'
 // COMMONS
 export const StringSchema = v.string()
 export const StringArraySchema = v.array(StringSchema)
 export const BooleanSchema = v.boolean()
 export const NumberSchema = v.number()
-// INTEGERS
-export const Int8Schema = v.number(
-  'Int8: It should be a number',
-  [
-    v.integer('Int8: It should be an integer number'),
-    v.minValue(INT8_MIN, `Int8: It should be greater than ${INT8_MIN - 1}`),
-    v.maxValue(INT8_MAX, `Int8: It should be less than ${INT8_MAX + 1}`)
-  ]
-)
-export const Int16Schema = v.number(
-  'Int16: It should be a number',
-  [
-    v.integer('Int16: It should be an integer number'),
-    v.minValue(INT16_MIN, `Int16: It should be greater than ${INT16_MIN - 1}`),
-    v.maxValue(INT16_MAX, `Int16: It should be less than ${INT16_MAX + 1}`)
-  ]
-)
-export const Int32Schema = v.number(
-  'Int32: It should be a number',
-  [
-    v.integer('It should be an integer number'),
-    v.minValue(INT32_MIN, `Int32: It should be greater than ${INT32_MIN - 1}`),
-    v.maxValue(INT32_MAX, `Int32: It should be less than ${INT32_MAX + 1}`)
-  ]
-)
-export const BigIntSchema = v.bigint('BigInt: It should be a BigInt')
-// UNSIGNED INTEGERS
-export const Uint8Schema = v.number(
-  'Uint8: It should be a number',
-  [
-    v.integer('Uint8: It should be an integer number'),
-    v.minValue(0, 'Uint8: It should be greater than 0'),
-    v.maxValue(UINT8_MAX, `Uint8: It should be less than ${UINT8_MAX + 1}`)
-  ]
-)
-export const Uint16Schema = v.number(
-  'Uint16: It should be a number',
-  [
-    v.integer('Uint16: It should be an integer number'),
-    v.minValue(0, 'Uint16: It should be greater than 0'),
-    v.maxValue(UINT16_MAX, `Uint16: It should be less than ${UINT16_MAX + 1}`)
-  ]
-)
-export const Uint32Schema = v.number(
-  'Uint32: It should be a number',
-  [
-    v.integer('Uint32: It should be an integer number'),
-    v.minValue(0, 'Uint32: It should be greater than 0'),
-    v.maxValue(UINT32_MAX, `Uint32: It should be less than ${UINT32_MAX + 1}`)
-  ]
-)
-export const BigUintSchema = v.bigint(
-  'BigUint: It should be a BigInt',
-  [v.minValue(0n, 'BigUint: It should be greater than 0n')]
-)
+
 // HARDWARE
 export const SerialNumberSchema = v.string('SerialNumber: It should be a string', [
   v.custom((input: string) => {
