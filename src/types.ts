@@ -1,18 +1,9 @@
 import * as v from 'valibot'
 import {
-  BigUintSchema, EmitterSchema, FirmwareSchema, FrequencySchema, Int16Schema, Int32Schema, Int8Schema, ModeSchema, ReceiverSchema, SerialNumberSchema, Uint16Schema, Uint32Schema, Uint8Schema
+  EmitterSchema, FirmwareSchema, FrequencySchema, ModeSchema, ReceiverSchema, SerialNumberSchema
 } from "./schemas";
 import { LISTENING_FRAMES } from './constants';
 
-// INTEGERS
-export type Int8 = v.Input<typeof Int8Schema>
-export type Int16 = v.Input<typeof Int16Schema>
-export type Int32 = v.Input<typeof Int32Schema>
-// NATURALS
-export type Uint8 = v.Input<typeof Uint8Schema>
-export type Uint16 = v.Input<typeof Uint16Schema>
-export type Uint32 = v.Input<typeof Uint32Schema>
-export type BigUint = v.Input<typeof BigUintSchema>
 // TB LIVE
 export type SerialNumber = v.Input<typeof SerialNumberSchema>
 export type Frequency = v.Input<typeof FrequencySchema>
@@ -25,7 +16,7 @@ export type ListeningFrame = typeof LISTENING_FRAMES[number]
 
 export type TODO = any
 
-export type FramesParser = (text: string) => TODO[]
+export type FramesParser = (text: string) => [TODO[], string]
 export type MapModeParser = Map<Mode, FramesParser>
 export type MapFirmwareParser = Map<Firmware, MapModeParser>
 

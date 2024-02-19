@@ -21,7 +21,8 @@ export const FREQUENCY_MAX = 77
 
 export const SERIAL_NUMBERS_RESERVED = [104, 105, 106, 107, 110, 111]
 
-export const MODES = ['listening', 'command', 'update'] as const
+// export const MODES = ['listening', 'command', 'update'] as const
+export const MODES = ['listening', 'command'] as const
 
 export const LISTENING_FRAMES = ['sample', 'ping', 'roundClock', 'setClock'] as const
 
@@ -34,12 +35,13 @@ export const SAMPLE_FLAG_END = '\r'
 export const SAMPLE_FLAG_SPLIT = ','
 
 export const PING_FLAG_START = 'SN='
-export const PING_FLAG_END = ' ><>\r'
+export const PING_FLAG_END = '><>\r'
 export const PING_FLAG_LENGTH_MIN = PING_FLAG_START.length + PING_FLAG_END.length + 6
 export const PING_FLAG_LENGTH_MAX = PING_FLAG_START.length + PING_FLAG_END.length + 7
 
-export const ROUND_CLOCK_FLAG = 'ack01\r'
-export const SET_CLOCK_FLAG = 'ack02\r'
+export const CLOCK_FLAG = 'ack'
+export const CLOCK_FLAG_ROUND = 'ack01\r'
+export const CLOCK_FLAG_SET = 'ack02\r'
 
 export const EMITTER_ANGLE_BIT_LENGTH = 10
 export const EMITTER_ANGLE_FACTOR = 10
