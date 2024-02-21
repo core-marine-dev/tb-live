@@ -145,9 +145,6 @@ describe('parse', () => {
       `${garbage}${receiver}${round}${ping}${garbage}${emitter}${set}`,
     ].forEach((fr) => {
       const [frames, txt] = parse(fr)
-      if (txt.includes('\r')) {
-        console.log('it has CR')
-      }
       expect(txt).toHaveLength(0)
       expect(frames).toHaveLength(5)
     })
@@ -169,9 +166,6 @@ describe('parse', () => {
       `${garbage}${receiver}${round}${ping}${garbage}${emitter}${set}`,
     ].forEach((fr) => {
       const [frames, txt] = parse(fr)
-      if (txt.includes('\r')) {
-        console.log('it has CR')
-      }
       expect(txt).toHaveLength(0)
       expect(frames).toHaveLength(7)
     })
