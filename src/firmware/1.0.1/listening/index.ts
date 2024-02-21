@@ -71,12 +71,8 @@ const ops: Record<ListeningFrame, (txt: string) => [TODO, string]> =  {
 export const parse = (input: string): [TODO[], string] => {
   let text = input
   let response: TODO[] = []
-  let i = 0
   while (text.length > 0) {
-    console.log(`iteracion ${i}`)
-    console.log(`text = ${text}`)
     const [index, type] = getFramesIndex(text)
-    console.log(`Index = ${index}`)
     if (index === -1 || type === null) {
       // text = ''
       break
@@ -85,9 +81,6 @@ export const parse = (input: string): [TODO[], string] => {
     const [res, txt] = ops[type](text)
     response.push(res)
     text = txt
-    console.log(`txt = ${txt}`)
-    console.log(`length = ${text.length}\n`)
-    i++
   }
   return [response, text]
 }
