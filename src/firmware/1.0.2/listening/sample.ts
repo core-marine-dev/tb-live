@@ -1,7 +1,8 @@
 import { SAMPLE_FLAG_END, SAMPLE_FLAG_SPLIT, SAMPLE_FLAG_START } from "../../../constants"
 import { getLineData, getLineSNR, getLinesTemperature } from "../../../utils"
 
-export const parseSample = (raw: string) => {
+export const parseSample = (text: string) => {
+  const raw = text
   const data = raw.slice(SAMPLE_FLAG_START.length, -SAMPLE_FLAG_END.length).split(SAMPLE_FLAG_SPLIT)
   // Emitter
   if (data.length === 8) return { raw, ...emitter(data) }
@@ -94,6 +95,7 @@ export const receiver = (elements: string[]) => {
   const noisePeak: number = parseInt(elements[5])
   const frequency: number = parseInt(elements[6])
   return {
+    frame,
     data: [receiver, seconds, log, temperature, noiseAverage, noisePeak, frequency],
     fields: [
       { name: 'receiver', type: 'string', data: receiver },
