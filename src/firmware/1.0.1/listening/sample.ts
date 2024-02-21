@@ -62,16 +62,18 @@ export const emitter = (elements: string[]) => {
     object: {
       frame,
       receiver,
-      timestamp: parseInt(`${seconds}${milliseconds}`),
       sample: {
-        serialNumber: emitter,
-        protocol,
+        timestamp: parseInt(`${seconds}${milliseconds}`),
+        emitter,
         frequency,
-        angle: line.angle.degrees,
-        std: line.deviation.degrees,
-        snr
+        protocol,
+        angle: {
+          avg: line.angle.degrees,
+          std: line.deviation.degrees,
+        },
+        snr,
+        message: frameIndex
       },
-      message: frameIndex
     }
   }
 }
@@ -101,6 +103,7 @@ export const receiver = (elements: string[]) => {
   const signal = getLineSNR(snr)
   const frameIndex = parseInt(elements[7])
   return {
+    frame,
     data: [receiver, seconds, log, temperature, noiseAverage, noisePeak, snr, frameIndex],
     fields: [
       { name: 'receiver', type: 'string', data: receiver },
@@ -115,15 +118,17 @@ export const receiver = (elements: string[]) => {
     object: {
       frame,
       receiver,
-      timestamp: parseInt(`${seconds}000`),
-      log, 
-      temperature: linesTemperature.degrees,
-      noise: {
-        average: noiseAverage,
-        peak: noisePeak,
-        snr: { value: snr, signal: signal.signal },
-      },
-      message: frameIndex
+      sample: {
+        timestamp: parseInt(`${seconds}000`),
+        log,
+        temperature: linesTemperature.degrees,
+        noise: {
+          average: noiseAverage,
+          peak: noisePeak,
+          snr: { value: snr, signal: signal.signal },
+        },
+        message: frameIndex
+      }
     }
   }
 }
