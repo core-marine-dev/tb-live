@@ -1,8 +1,8 @@
-import { SAMPLE_FLAG_END, SAMPLE_FLAG_SPLIT, SAMPLE_FLAG_START } from "../../../constants"
 import { getLineData, getLineSNR, getLinesTemperature } from "../../../utils"
+import { SAMPLE_END, SAMPLE_SPLIT, SAMPLE_START } from "../flags"
 
 export const parseSample = (raw: string) => {
-  const data = raw.slice(SAMPLE_FLAG_START.length, -SAMPLE_FLAG_END.length).split(SAMPLE_FLAG_SPLIT)
+  const data = raw.slice(SAMPLE_START.length, -SAMPLE_END.length).split(SAMPLE_SPLIT)
   // Emitter
   if (data.length === 9) return { raw, ...emitter(data) }
   // Receiver

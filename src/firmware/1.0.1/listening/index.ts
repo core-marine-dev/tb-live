@@ -1,5 +1,5 @@
-import { PING_FLAG_START, CLOCK_FLAG_ROUND, SAMPLE_FLAG_START, CLOCK_FLAG_SET, SAMPLE_FLAG_END, PING_FLAG_END } from "../../../constants"
-import { ListeningFrame, TODO } from "../../../types"
+import { TODO } from "../../../types"
+import { CLOCK_ROUND, CLOCK_SET, FLAGS_LISTENING, PING_START, SAMPLE_START, SAMPLE_END, PING_END } from "../flags"
 import { parseClock } from "./clock"
 import { parsePing } from "./ping"
 import { parseSample } from "./sample"
@@ -12,75 +12,44 @@ import { parseSample } from "./sample"
  * 02 - Round clock     -> ack01\r
  * 03 - Set clock       -> ack02\r
 */
-export const getFramesIndex = (input: string): [number, ListeningFrame | null] => {
-  const indexSample = input.indexOf(SAMPLE_FLAG_START)
-  const indexPing = input.indexOf(PING_FLAG_START)
-  const indexRoundClock = input.indexOf(CLOCK_FLAG_ROUND)
-  const indexSetClock = input.indexOf(CLOCK_FLAG_SET)
-  const index = Math.min(...[indexSample, indexPing, indexRoundClock, indexSetClock].filter(i => i > -1))
-  // No data
-  if (index === -1) return [-1, null]
-  // Sample
-  if (index === indexSample) return [index, 'sample']
-  // Ping
-  if (index === indexPing) return [index, 'ping']
-  // Round Clock
-  if (index === indexRoundClock) return [index, 'roundClock']
-  // Set Clock
-  if (index === indexSetClock) return [index, 'setClock']
-  return [-1, null]
-}
 
-export const sample = (text: string): [TODO, string] => {
-  const endIndex = text.indexOf(SAMPLE_FLAG_END) + SAMPLE_FLAG_END.length
-  const frame = text.slice(0, endIndex)
-  if (frame.includes(PING_FLAG_START)) {
-    const index = frame.indexOf(PING_FLAG_START)
-    const subframe = frame.slice(index)
-    const response = parsePing(subframe)
-    return [response, text.slice(0, index) + text.slice(endIndex)]
+export const sample = (text: string): { frame: TODO, remainder: string } => {
+  const endIndex = text.indexOf(SAMPLE_END) + SAMPLE_END.length
+  if (endIndex === -1) return { frame: null, remainder: text }
+  const data = text.slice(0, endIndex)
+  if (data.includes(PING_START)) {
+    const index = data.indexOf(PING_START)
+    const subframe = data.slice(index)
+    return { frame: parsePing(subframe), remainder: text.slice(0, index) + text.slice(endIndex) }
   }
-  const response = parseSample(frame)
-  return [response, text.slice(endIndex)]
+  return { frame: parseSample(data), remainder: text.slice(endIndex) }
 }
 
-export const ping = (text: string): [TODO, string] => {
-  const endIndex = text.indexOf(PING_FLAG_END) + PING_FLAG_END.length
-  const frame = text.slice(0, endIndex)
-  const response = parsePing(frame)
-  return [response, text.slice(endIndex)]
+export const ping = (text: string): { frame: TODO, remainder: string } => {
+  let endIndex = text.indexOf(PING_END)
+  if (endIndex === -1) return { frame: null, remainder: text }
+  endIndex += PING_END.length
+  const data = text.slice(0, endIndex)
+  return { frame: parsePing(data), remainder: text.slice(endIndex) }
 }
 
-export const clock = (text: string, operation: 'round' | 'set'): [TODO, string] => {
-  const frame = (operation === 'round') ? CLOCK_FLAG_ROUND : CLOCK_FLAG_SET
-  const response = parseClock(frame, operation)
-  const txt = text.slice(frame.length)
-  return [response, txt]
+export const clock = (text: string, operation: 'round' | 'set'): { frame: TODO, remainder: string } => {
+  const data = (operation === 'round') ? CLOCK_ROUND : CLOCK_SET
+  return { frame: parseClock(data, operation), remainder: text.slice(data.length) }
 }
 
 export const roundClock = (text: string) => clock(text, 'round')
 export const setClock = (text: string) => clock(text, 'set')
 
-const ops: Record<ListeningFrame, (txt: string) => [TODO, string]> =  {
-  'sample': sample,
-  'ping': ping,
-  'roundClock': roundClock,
-  'setClock': setClock
-}
+const ops: Map<typeof FLAGS_LISTENING[number], (txt: string) => { frame: TODO, remainder: string }> = new Map()
+ops.set(SAMPLE_START, sample)
+ops.set(PING_START, ping)
+ops.set(CLOCK_ROUND, roundClock)
+ops.set(CLOCK_SET, setClock)
 
-export const parse = (input: string): [TODO[], string] => {
-  let text = input
-  let response: TODO[] = []
-  while (text.length > 0) {
-    const [index, type] = getFramesIndex(text)
-    if (index === -1 || type === null) {
-      // text = ''
-      break
-    }
-    text = text.slice(index)
-    const [res, txt] = ops[type](text)
-    response.push(res)
-    text = txt
-  }
-  return [response, text]
+
+export const parse = (input: string, flag: typeof FLAGS_LISTENING[number]): { frame: TODO, remainder: string } => {
+  const parser = ops.get(flag)
+  if (parser) return parser(input)
+  return { frame: null, remainder: input}
 }
