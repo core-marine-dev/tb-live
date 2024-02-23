@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { clock, parse, ping, sample } from '../../../../src/firmware/1.0.1/listening/index'
+import { clock, ping, sample } from '../../../../src/firmware/1.0.1/listening/index'
 import { CLOCK_ROUND, CLOCK_SET, PING_END, PING_START } from '../../../../src/firmware/1.0.1/flags'
 
 describe('clock', () => {
@@ -129,69 +129,3 @@ describe('sample', () => {
     }
   })
 })
-
-// test.skip('getFramesIndex', () => {
-//   const emitter = '$1000042,0000002202,615,S64K,1285,52428,24,69,11\r'
-//   const receiver = '$1000042,0000000600,TBR Sensor,297,15,29,69,6\r'
-//   const sn = '1000042'
-//   const ping = PING_START + sn + PING_END
-//   const round = CLOCK_ROUND
-//   const set = CLOCK_SET
-//   const garbage = 'lkashf';
-//   [
-//     ['roundClock', garbage + round + emitter + ping + garbage + receiver + set],
-//     ['setClock', garbage + set + emitter + ping + garbage + receiver + round],
-//     ['ping', garbage + ping + emitter + round + garbage + receiver + set],
-//     ['sample', garbage + emitter + round + ping + garbage + receiver + set],
-//     ['sample', garbage + receiver + round + ping + garbage + emitter + set],
-//   ].forEach(([name, fr]) => {
-//     const [index, frame] = getFramesIndex(fr)
-//     expect(index).toBe(garbage.length)
-//     expect(frame).toBe(name)
-//   })
-// })
-
-// describe.skip('parse', () => {
-
-//   test('happy path', () => {
-//     const emitter = '$1000042,0000002202,615,S64K,1285,52428,24,69,11\r'
-//     const receiver = '$1000042,0000000600,TBR Sensor,297,15,29,69,6\r'
-//     const sn = '1000042'
-//     const ping = `${PING_START}${sn} ${PING_END}`
-//     const round = CLOCK_ROUND
-//     const set = CLOCK_SET
-//     const garbage = 'lkashf';
-//     [
-//       `${garbage}${round}${emitter}${ping}${garbage}${receiver}${set}`,
-//       `${garbage}${set}${emitter}${ping}${garbage}${receiver}${round}`,
-//       `${garbage}${ping}${emitter}${round}${garbage}${receiver}${set}`,
-//       `${garbage}${emitter}${round}${ping}${garbage}${receiver}${set}`,
-//       `${garbage}${receiver}${round}${ping}${garbage}${emitter}${set}`,
-//     ].forEach((fr) => {
-//       const [frames, txt] = parse(fr)
-//       expect(txt).toHaveLength(0)
-//       expect(frames).toHaveLength(5)
-//     })
-//   })
-
-//   test('happy path with ping in the middle', () => {
-//     const round = CLOCK_ROUND
-//     const set = CLOCK_SET
-//     const sn = '1000042'
-//     const ping = `${PING_START}${sn} ${PING_END}`
-//     const emitter = `$1000042,0000002${ping}}202,615,S64K,1285,52428,24,69,11\r`
-//     const receiver = `$1000042,0000000600,TBR Se${ping}nsor,297,15,29,69,6\r`
-//     const garbage = 'lkashf';
-//     [
-//       `${garbage}${round}${emitter}${ping}${garbage}${receiver}${set}`,
-//       `${garbage}${set}${emitter}${ping}${garbage}${receiver}${round}`,
-//       `${garbage}${ping}${emitter}${round}${garbage}${receiver}${set}`,
-//       `${garbage}${emitter}${round}${ping}${garbage}${receiver}${set}`,
-//       `${garbage}${receiver}${round}${ping}${garbage}${emitter}${set}`,
-//     ].forEach((fr) => {
-//       const [frames, txt] = parse(fr)
-//       expect(txt).toHaveLength(0)
-//       expect(frames).toHaveLength(7)
-//     })
-//   })
-// })
