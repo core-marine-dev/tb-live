@@ -19,7 +19,9 @@
     "tb-live",
     "thelma biotel"
   ],
+  "type": "module",
   "main": "index.js",
+  "types": "./lib/index.d.ts",
   "files": [
     "./lib"
   ],
