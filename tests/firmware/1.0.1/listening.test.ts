@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
-import { CLOCK_ROUND, CLOCK_SET, PING_END, PING_START } from '../../../../src/constants'
-import { sample, ping, clock } from '../../../../src/firmware/1.0.1/listening'
+import { CLOCK_ROUND, CLOCK_SET, PING_END, PING_START } from '../../../src/constants'
+import { sample, ping, clock } from '../../../src/firmware/1.0.1/listening'
 
 describe('sample', () => {
   test('happy path - emitter', () => {
