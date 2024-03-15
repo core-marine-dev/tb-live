@@ -2,7 +2,7 @@ import * as v from 'valibot'
 import {
   EmitterSchema, FirmwareSchema, FrequencySchema, ModeSchema, ReceiverSchema, SerialNumberSchema
 } from "./schemas";
-import { LISTENING_FRAMES } from './constants';
+import { FLAGS_COMMAND, FLAGS_LISTENING, LISTENING_FRAMES } from './constants';
 
 // TB LIVE
 export type SerialNumber = v.Input<typeof SerialNumberSchema>
@@ -20,6 +20,9 @@ export type FramesParser = (text: string) => [TODO[], string]
 export type MapModeParser = Map<Mode, FramesParser>
 export type MapFirmwareParser = Map<Firmware, MapModeParser>
 
+
+export type FLAG = typeof FLAGS_LISTENING[number] | typeof FLAGS_COMMAND[number]
+export type FLAGS = typeof FLAGS_LISTENING | typeof FLAGS_COMMAND
 // LISTENING
 // type AcousticSensorSample = {
 //   raw: string,           // Raw string with the sample data

@@ -1,8 +1,8 @@
 import * as v from 'valibot'
 import { describe, test, expect } from 'vitest'
-import { FREQUENCY_MAX, FREQUENCY_MIN } from './constants'
-import { EmitterSchema, FrequencySchema, ReceiverSchema, SerialNumberSchema } from './schemas'
-import { Emitter, Firmware, Mode, Receiver } from './types'
+import { FIRMWARES_AVAILABLE, FREQUENCY_MAX, FREQUENCY_MIN } from '../src/constants'
+import { EmitterSchema, FrequencySchema, ReceiverSchema, SerialNumberSchema } from '../src/schemas'
+import { Emitter, Firmware, Mode, Receiver } from '../src/types'
 
 describe('Serial Numbers', () => {
   test('Non valid type of inputs', () => {
@@ -172,7 +172,7 @@ describe('Receiver', () => {
       const result = v.safeParse(ReceiverSchema, receiver)
       expect(result.success).toBeFalsy()
       if (!result.success) {
-        expect(result.issues[0].message).toBe('Firmware: It should be "1.0.1" or "1.0.2"')
+        expect(result.issues[0].message).toBe(`Firmware: available firmwares are ${FIRMWARES_AVAILABLE}`)
       }
     });
     [102, true, {}].forEach(fw => {
