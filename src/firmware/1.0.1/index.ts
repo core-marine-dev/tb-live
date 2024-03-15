@@ -1,8 +1,8 @@
-import { Mode, TODO } from "../../types"
+import { FLAG, FLAGS, Mode, TODO } from "../../types"
 // import { MapModeParser } from "../../types"
 import { parse as listeningFrame } from './listening'
 import { parse as commandFrame } from './command'
-import { FLAG, FLAGS, FLAGS_COMMAND, FLAGS_LISTENING, PING_END, PING_LENGTH_MAX } from "./flags";
+import { FLAGS_COMMAND, FLAGS_LISTENING, PING_END, PING_LENGTH_MAX } from "../../constants";
 // import { number } from "valibot"
 
 export const getFramesIndex = (text: string, flags: FLAGS ): { index: number, flag: FLAG, last: boolean } | null => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { CLOCK_ROUND, CLOCK_SET, FLAGS_LISTENING, PING_END, PING_START } from '../../../src/firmware/1.0.1/flags'
 import { getFramesIndex, parse } from '../../../src/firmware/1.0.1'
+import { CLOCK_ROUND, CLOCK_SET, FLAGS_LISTENING, PING_END, PING_START } from '../../../src/constants'
 
 describe('getFramesIndex', () => {
   test('listening', () => {
