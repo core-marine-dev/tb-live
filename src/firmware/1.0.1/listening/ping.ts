@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 import { SerialNumberSchema } from '../../../schemas'
-import { PING_END, PING_START } from '../flags'
+import { PING_END, PING_START } from '../../../constants'
 
 /**
  * PING:

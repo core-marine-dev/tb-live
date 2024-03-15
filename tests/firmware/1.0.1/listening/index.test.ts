@@ -1,68 +1,6 @@
 import { describe, test, expect } from 'vitest'
-import { clock, ping, sample } from '../../../../src/firmware/1.0.1/listening/index'
-import { CLOCK_ROUND, CLOCK_SET, PING_END, PING_START } from '../../../../src/firmware/1.0.1/flags'
-
-describe('clock', () => {
-  test('round', () => {
-    const name = 'round clock'
-    const flag = CLOCK_ROUND
-    const garbage = 'lsdkjhaklsd'
-    const input = flag + garbage
-    const { frame, remainder} = clock(input, 'round')
-    expect(remainder).toBe(garbage)
-    expect(frame).not.toBeNull()
-    if (frame !== null) {
-      expect(frame.frame).toBe(name)
-      expect(frame.raw).toBe(flag)
-    }
-  })
-
-  test('set', () => {
-    const name = 'set clock'
-    const flag = CLOCK_SET
-    const garbage = 'lsdkjhaklsd'
-    const input = flag + garbage
-    const { frame, remainder} = clock(input, 'set')
-    expect(remainder).toBe(garbage)
-    expect(frame).not.toBeNull()
-    if (frame !== null) {
-      expect(frame.frame).toBe(name)
-      expect(frame.raw).toBe(flag)
-    }
-  })
-})
-
-describe('ping', () => {
-  test('happy path', () => {
-    const name = 'ping'
-    const sn = '1234567'
-    const pg = PING_START + sn + PING_END
-    const garbage = 'slkjhfalfsj'
-    const input = pg + garbage
-    const { frame, remainder } = ping(input)
-    expect(remainder).toBe(garbage)
-    expect(frame).not.toBeNull()
-    if (frame !== null) {
-      expect(frame.frame).toBe(name)
-      expect(frame.raw).toBe(pg)
-      expect(frame.object.receiver).toBe(sn)
-    }
-  })
-
-  test('invalid serial numbers', () => {
-    ['12345', '12345678', '12345ab'].forEach(sn => {
-      const pg = PING_START + sn + PING_END
-      const garbage = 'slkjhfalfsj'
-      const input = pg + garbage
-      const { frame, remainder} = ping(input)
-      expect(remainder).toBe(garbage)
-      expect(frame).not.toBeNull()
-      if (frame !== null) {
-        expect(frame.error).not.toBeUndefined()
-      }
-    })
-  })
-})
+import { CLOCK_ROUND, CLOCK_SET, PING_END, PING_START } from '../../../../src/constants'
+import { sample, ping, clock } from '../../../../src/firmware/1.0.1/listening'
 
 describe('sample', () => {
   test('happy path - emitter', () => {
@@ -126,6 +64,68 @@ describe('sample', () => {
       expect(frame.frame).toBe(name)
       expect(frame.raw).toBe(inputPing)
       expect(frame.object.receiver).toBe(sn)
+    }
+  })
+})
+
+describe('ping', () => {
+  test('happy path', () => {
+    const name = 'ping'
+    const sn = '1234567'
+    const pg = PING_START + sn + PING_END
+    const garbage = 'slkjhfalfsj'
+    const input = pg + garbage
+    const { frame, remainder } = ping(input)
+    expect(remainder).toBe(garbage)
+    expect(frame).not.toBeNull()
+    if (frame !== null) {
+      expect(frame.frame).toBe(name)
+      expect(frame.raw).toBe(pg)
+      expect(frame.object.receiver).toBe(sn)
+    }
+  })
+
+  test('invalid serial numbers', () => {
+    ['12345', '12345678', '12345ab'].forEach(sn => {
+      const pg = PING_START + sn + PING_END
+      const garbage = 'slkjhfalfsj'
+      const input = pg + garbage
+      const { frame, remainder} = ping(input)
+      expect(remainder).toBe(garbage)
+      expect(frame).not.toBeNull()
+      if (frame !== null) {
+        expect(frame.error).not.toBeUndefined()
+      }
+    })
+  })
+})
+
+describe('clock', () => {
+  test('round', () => {
+    const name = 'round clock'
+    const flag = CLOCK_ROUND
+    const garbage = 'lsdkjhaklsd'
+    const input = flag + garbage
+    const { frame, remainder} = clock(input, 'round')
+    expect(remainder).toBe(garbage)
+    expect(frame).not.toBeNull()
+    if (frame !== null) {
+      expect(frame.frame).toBe(name)
+      expect(frame.raw).toBe(flag)
+    }
+  })
+
+  test('set', () => {
+    const name = 'set clock'
+    const flag = CLOCK_SET
+    const garbage = 'lsdkjhaklsd'
+    const input = flag + garbage
+    const { frame, remainder} = clock(input, 'set')
+    expect(remainder).toBe(garbage)
+    expect(frame).not.toBeNull()
+    if (frame !== null) {
+      expect(frame.frame).toBe(name)
+      expect(frame.raw).toBe(flag)
     }
   })
 })

@@ -1,5 +1,5 @@
+import { CLOCK_ROUND, CLOCK_SET, FLAGS_LISTENING, PING_END, PING_START, SAMPLE_END, SAMPLE_START } from "../../../constants"
 import { TODO } from "../../../types"
-import { CLOCK_ROUND, CLOCK_SET, FLAGS_LISTENING, PING_START, SAMPLE_START, SAMPLE_END, PING_END } from "../flags"
 import { parseClock } from "./clock"
 import { parsePing } from "./ping"
 import { parseSample } from "./sample"

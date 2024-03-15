@@ -1,5 +1,5 @@
+import { SAMPLE_END, SAMPLE_SPLIT, SAMPLE_START } from "../../../constants"
 import { getLineData, getLineSNR, getLinesTemperature } from "../../../utils"
-import { SAMPLE_END, SAMPLE_SPLIT, SAMPLE_START } from "../flags"
 
 export const parseSample = (raw: string) => {
   const data = raw.slice(SAMPLE_START.length, -SAMPLE_END.length).split(SAMPLE_SPLIT)
