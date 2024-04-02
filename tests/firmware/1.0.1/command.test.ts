@@ -5,22 +5,23 @@ import { API_END, API_START, FACTORY_RESET, FIRMWARES_AVAILABLE, FIRMWARE_START,
 import { FrequencySchema, SerialNumberSchema } from '../../../src/schemas'
 import { LOG_INTERVALS } from '../../../src/firmware/1.0.1/command/log-interval'
 import { PROTOCOLS } from '../../../src/firmware/1.0.1/command/protocol'
+import { type ParsedFrame } from '../../../src/types'
 
 describe('serial number', () => {
-  const frame = 'serial number'
+  const name = 'serial number'
 
   test('happy path', () => {
     const sn = '1234567'
     const input = SERIAL_NUMBER_START + sn
     const output = serialNumber(input)
-    const expected = {
+    const expected: ParsedFrame = {
       remainder: '',
       frame: {
-        frame,
+        name,
         raw: input,
         data: [sn],
         fields: [{ name: 'serial number', type: 'string', data: sn }],
-        object: {
+        metadata: {
           serialNumber: sn
         }
       }
@@ -32,10 +33,10 @@ describe('serial number', () => {
     const sn = '123456'
     const input = SERIAL_NUMBER_START + sn
     const output = serialNumber(input)
-    const expected = {
+    const expected: ParsedFrame = {
       remainder: sn,
       frame: {
-        frame,
+        name,
         raw: input,
         error: 'frame incomplete'
       }
@@ -50,10 +51,10 @@ describe('serial number', () => {
     const parsed = v.safeParse(SerialNumberSchema, sn)
     expect(parsed.success).toBeFalsy()
     if (!parsed.success) {
-      const expected = {
+      const expected: ParsedFrame = {
         remainder: sn,
         frame: {
-          frame,
+          name,
           raw: input,
           error: parsed.issues[0].message
         }
@@ -64,21 +65,21 @@ describe('serial number', () => {
 })
 
 describe('firmware', () => {
-  const frame = 'firmware'
+  const name = 'firmware'
 
   test('happy path', () => {
     ['1.0.1', 'v1.0.1', 'v1.0.1aslfkjh'].forEach(sample => {
       const input = FIRMWARE_START + sample
       const output = firmware(input)
       const fw = '1.0.1'
-      const expected = {
+      const expected: ParsedFrame = {
         remainder: sample.slice(sample.indexOf(fw) + fw.length),
         frame: {
-          frame,
+          name,
           raw: (sample.startsWith('v')) ? 'v' + fw : fw,
           data: [fw],
           fields: [{ name: 'firmware', type: 'string', data: fw }],
-          object: {
+          metadata: {
             firmware: fw
           }
         }
@@ -90,14 +91,14 @@ describe('firmware', () => {
       const input = FIRMWARE_START + sample
       const output = firmware(input)
       const fw = '1.0.2'
-      const expected = {
+      const expected: ParsedFrame = {
         remainder: sample.slice(sample.indexOf(fw) + fw.length),
         frame: {
-          frame,
+          name,
           raw: (sample.startsWith('v')) ? 'v' + fw : fw,
           data: [fw],
           fields: [{ name: 'firmware', type: 'string', data: fw }],
-          object: {
+          metadata: {
             firmware: fw
           }
         }
@@ -110,10 +111,10 @@ describe('firmware', () => {
     const task = (fw, error) => {
       const input = FIRMWARE_START + fw
       const output = firmware(input)
-      const expected = {
+      const expected: ParsedFrame = {
         remainder: fw,
         frame: {
-          frame,
+          name,
           raw: input,
           error
         }
@@ -133,10 +134,10 @@ describe('firmware', () => {
       const output = firmware(input)
       const dots = fw.match(/\./g)?.length
       const raw = (dots === 3) ? fw.slice(0, fw.lastIndexOf('.')) : fw
-      const expected = {
+      const expected: ParsedFrame = {
         remainder: fw,
         frame: {
-          frame,
+          name,
           raw,
           error: `Firmware: available firmwares are ${FIRMWARES_AVAILABLE}`
         }
@@ -148,21 +149,21 @@ describe('firmware', () => {
 })
 
 describe('frequency', () => {
-  const frame = 'frequency'
+  const name = 'frequency'
 
   test('happy path', () => {
     const fq = '65'
     const input = FREQUENCY_START + fq
     const output = frequency(input)
     const freq = parseInt(fq)
-    const expected = {
+    const expected: ParsedFrame = {
       remainder: '',
       frame: {
-        frame,
+        name,
         raw: input,
         data: [freq],
         fields: [{ name: 'frequency', type: 'uint8', units: 'kHz', data: freq }],
-        object: {
+        metadata: {
           frequency: freq
         }
       }
@@ -174,10 +175,10 @@ describe('frequency', () => {
     const fq = '1'
     const input = FREQUENCY_START + fq
     const output = frequency(input)
-    const expected = {
+    const expected: ParsedFrame = {
       remainder: fq,
       frame: {
-        frame,
+        name,
         raw: input,
         error: 'frame incomplete'
       }
@@ -192,10 +193,10 @@ describe('frequency', () => {
     const parsed = v.safeParse(FrequencySchema, fq)
     expect(parsed.success).toBeFalsy()
     if (!parsed.success) {
-      const expected = {
+      const expected: ParsedFrame = {
         remainder: fq,
         frame: {
-          frame: 'frequency',
+          name,
           raw: input,
           error: `${fq} is not a number`
         }
@@ -206,20 +207,20 @@ describe('frequency', () => {
 })
 
 describe('log interval', () => {
-  const frame = 'log interval'
+  const name = 'log interval'
 
   test('happy path', () => {
     Object.entries(LOG_INTERVALS).forEach(([li, time]) => {
       const input = LOG_INTERVAL_START + li
       const output = logInterval(input)
-      const expected = {
+      const expected: ParsedFrame = {
         remainder: '',
         frame: {
-          frame,
+          name,
           raw: input,
           data: [li],
           fields: [{ name: 'log interval', type: 'string', data: li, metadata: time }],
-          object: {
+          metadata: {
             logInterval: li,
             time
           }
@@ -234,10 +235,10 @@ describe('log interval', () => {
     const li = '1'
     const input = LOG_INTERVAL_START + li
     const output = logInterval(input)
-    const expected = {
+    const expected: ParsedFrame = {
       remainder: li,
       frame: {
-        frame,
+        name,
         raw: input,
         error: 'frame incomplete'
       }
@@ -249,10 +250,10 @@ describe('log interval', () => {
     const li = '7a'
     const input = LOG_INTERVAL_START + li
     const output = logInterval(input)
-    const expected = {
+    const expected: ParsedFrame = {
       remainder: li,
       frame: {
-        frame,
+        name,
         raw: input,
         error: `${li} is not a number`
       }
@@ -262,20 +263,20 @@ describe('log interval', () => {
 })
 
 describe('protocols', () => {
-  const frame = 'listenning protocols'
+  const name = 'listening protocols'
 
   test('happy path', () => {
     Object.entries(PROTOCOLS).forEach(([lm, info]) => {
       const input = PROTOCOLS_START + lm
       const output = protocols(input)
-      const expected = {
+      const expected: ParsedFrame = {
         remainder: '',
         frame: {
-          frame,
+          name,
           raw: input,
           data: [lm],
           fields: [{ name: 'protocols', type: 'string', data: lm, metadata: info }],
-          object: {
+          metadata: {
             lm,
             channel: info.channel,
             protocols: {
@@ -294,10 +295,10 @@ describe('protocols', () => {
     const lm = '1'
     const input = PROTOCOLS_START + lm
     const output = protocols(input)
-    const expected = {
+    const expected: ParsedFrame = {
       remainder: lm,
       frame: {
-        frame,
+        name,
         raw: input,
         error: 'frame incomplete'
       }
@@ -309,10 +310,10 @@ describe('protocols', () => {
     const lm = '7a'
     const input = PROTOCOLS_START + lm
     const output = protocols(input)
-    const expected = {
+    const expected: ParsedFrame = {
       remainder: lm,
       frame: {
-        frame,
+        name,
         raw: input,
         error: `${lm} is not a number`
       }
@@ -322,7 +323,7 @@ describe('protocols', () => {
 })
 
 describe('timestamp', () => {
-  const frame = 'device time'
+  const name = 'device time'
 
   test('happy path', () => {
     const seconds = String(Math.floor(Date.now() / 1000))
@@ -330,14 +331,14 @@ describe('timestamp', () => {
     const output = timestamp(input)
     const ts = Number(seconds) * 1000
     const date = (new Date(ts)).toISOString()
-    const expected = {
+    const expected: ParsedFrame = {
       remainder: '',
       frame: {
-        frame,
+        name,
         raw: input,
         data: [seconds],
         fields: [{ name: 'timestamp', type: 'uint16', units: 'seconds', data: seconds, metadata: date }],
-        object: {
+        metadata: {
           timestamp: ts,
           date
         }
@@ -350,10 +351,10 @@ describe('timestamp', () => {
     const seconds = String(Math.floor(Date.now() / 100000))
     const input = TIMESTAMP_START + seconds
     const output = timestamp(input)
-    const expected = {
+    const expected: ParsedFrame = {
       remainder: seconds,
       frame: {
-        frame,
+        name,
         raw: input,
         error: 'frame incomplete'
       }
@@ -365,10 +366,10 @@ describe('timestamp', () => {
     const seconds = '123456789a'
     const input = TIMESTAMP_START + seconds
     const output = timestamp(input)
-    const expected = {
+    const expected: ParsedFrame = {
       remainder: seconds,
       frame: {
-        frame,
+        name,
         raw: input,
         error: `${seconds} is not a string-number`
       }
@@ -378,7 +379,7 @@ describe('timestamp', () => {
 })
 
 describe('api', () => {
-  const frame = 'api'
+  const name = 'api'
   const apiWithGarbage = `In Command Mode
   Read values
     SN?	-	-	->	TBR serial number
@@ -412,14 +413,14 @@ describe('api', () => {
     const endIndex = input.indexOf(API_END) + API_END.length
     const fullAPI = input.slice(0, endIndex)
     const remainder = input.slice(endIndex)
-    const expected = {
+    const expected: ParsedFrame = {
       remainder,
       frame: {
-        frame,
+        name,
         raw: fullAPI,
         data: [fullAPI],
         fields: [{ name: 'api', type: 'string', data: fullAPI }],
-        object: {
+        metadata: {
           api: fullAPI,
         }
       }
@@ -430,10 +431,10 @@ describe('api', () => {
   test('incomplete api', () => {
     const input = apiWithGarbage.slice(0, apiWithGarbage.length - 10)
     const output = api(input)
-    const expected = {
+    const expected: ParsedFrame = {
       remainder: input.slice(API_START.length),
       frame: {
-        frame,
+        name,
         raw: input,
         error: 'frame incomplete'
       }
@@ -445,10 +446,10 @@ describe('api', () => {
 test('restart', () => {
   const input = RESTART_DEVICE
   const output = restart(input)
-  const expected = {
+  const expected: ParsedFrame = {
     remainder: '',
     frame: {
-      frame: 'restart device',
+      name: 'restart device',
       raw: input,
     }
   }
@@ -458,10 +459,10 @@ test('restart', () => {
 test('factory reset', () => {
   const input = FACTORY_RESET
   const output = factoryReset(input)
-  const expected = {
+  const expected: ParsedFrame = {
     remainder: '',
     frame: {
-      frame: 'factory reset',
+      name: 'factory reset',
       raw: input,
     }
   }
@@ -471,10 +472,10 @@ test('factory reset', () => {
 test('upgrade firmware', () => {
   const input = UPGRADE_FIRMWARE
   const output = upgradeFirmware(input)
-  const expected = {
+  const expected: ParsedFrame = {
     remainder: '',
     frame: {
-      frame: 'upgrade firmware',
+      name: 'upgrade firmware',
       raw: input,
     }
   }

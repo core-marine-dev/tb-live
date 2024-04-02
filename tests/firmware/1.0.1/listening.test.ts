@@ -10,7 +10,7 @@ describe('sample', () => {
     expect(remainder).toHaveLength(0)
     expect(frame).not.toBeNull()
     if (frame !== null) {
-      expect(frame.frame).toBe(name)
+      expect(frame.name).toBe(name)
       expect(frame.fields).toHaveLength(9)
       expect(frame.data).toHaveLength(9)
     }
@@ -23,7 +23,7 @@ describe('sample', () => {
     expect(remainder).toHaveLength(0)
     expect(frame).not.toBeNull()
     if (frame !== null) {
-      expect(frame.frame).toBe(name)
+      expect(frame.name).toBe(name)
       expect(frame.fields).toHaveLength(8)
       expect(frame.data).toHaveLength(8)
     }
@@ -42,9 +42,9 @@ describe('sample', () => {
     expect(remainder).toBe(inputEmitter)
     expect(frame).not.toBeNull()
     if (frame !== null) {
-      expect(frame.frame).toBe(name)
+      expect(frame.name).toBe(name)
       expect(frame.raw).toBe(inputPing)
-      expect(frame.object.receiver).toBe(sn)
+      expect(frame.metadata.receiver).toBe(sn)
     }
   })
 
@@ -61,9 +61,9 @@ describe('sample', () => {
     expect(remainder).toBe(inputReceiver)
     expect(frame).not.toBeNull()
     if (frame !== null) {
-      expect(frame.frame).toBe(name)
+      expect(frame.name).toBe(name)
       expect(frame.raw).toBe(inputPing)
-      expect(frame.object.receiver).toBe(sn)
+      expect(frame.metadata.receiver).toBe(sn)
     }
   })
 })
@@ -79,9 +79,9 @@ describe('ping', () => {
     expect(remainder).toBe(garbage)
     expect(frame).not.toBeNull()
     if (frame !== null) {
-      expect(frame.frame).toBe(name)
+      expect(frame.name).toBe(name)
       expect(frame.raw).toBe(pg)
-      expect(frame.object.receiver).toBe(sn)
+      expect(frame.metadata.receiver).toBe(sn)
     }
   })
 
@@ -106,11 +106,11 @@ describe('clock', () => {
     const flag = CLOCK_ROUND
     const garbage = 'lsdkjhaklsd'
     const input = flag + garbage
-    const { frame, remainder} = clock(input, 'round')
+    const { frame, remainder} = clock('round')(input)
     expect(remainder).toBe(garbage)
     expect(frame).not.toBeNull()
     if (frame !== null) {
-      expect(frame.frame).toBe(name)
+      expect(frame.name).toBe(name)
       expect(frame.raw).toBe(flag)
     }
   })
@@ -120,11 +120,11 @@ describe('clock', () => {
     const flag = CLOCK_SET
     const garbage = 'lsdkjhaklsd'
     const input = flag + garbage
-    const { frame, remainder} = clock(input, 'set')
+    const { frame, remainder} = clock('set')(input)
     expect(remainder).toBe(garbage)
     expect(frame).not.toBeNull()
     if (frame !== null) {
-      expect(frame.frame).toBe(name)
+      expect(frame.name).toBe(name)
       expect(frame.raw).toBe(flag)
     }
   })

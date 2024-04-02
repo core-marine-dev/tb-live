@@ -1,14 +1,15 @@
-import { SAMPLE_END, SAMPLE_SPLIT, SAMPLE_START } from "../../../constants"
-import { getLineData, getLineSNR, getLinesTemperature } from "../../../utils"
+import { SAMPLE_END, SAMPLE_SPLIT, SAMPLE_START } from '../../../constants'
+import { type Frame } from '../../../types'
+import { getLineData, getLineSNR, getLinesTemperature } from '../../../utils'
 
-export const parseSample = (raw: string) => {
+export const parseSample = (raw: string): Frame => {
   const data = raw.slice(SAMPLE_START.length, -SAMPLE_END.length).split(SAMPLE_SPLIT)
   // Emitter
-  if (data.length === 9) return { raw, ...emitter(data) }
+  if (data.length === 9) return { ...emitter(data), raw }
   // Receiver
-  if (data.length === 8) return { raw, ...receiver(data) }
+  if (data.length === 8) return { ...receiver(data), raw }
   // Unknown
-  return { raw, frame: 'sample', error: 'unknown frame', data }
+  return { name: 'sample', raw, error: 'unknown frame', data }
 }
 /** Emitter: Acoustic detection
  * Field |  Type  | Description
@@ -26,14 +27,14 @@ export const parseSample = (raw: string) => {
  *                |    weak | 0 <= SNR <= 6
  *                | regular | 6 < SNR < 25
  *                |  strong | 25 <= SNR
- *                | typical | 6 < SNR < 60 typical values 
+ *                | typical | 6 < SNR < 60 typical values
  *     7 |  uint8 | Transmitter Detection Frequency in kHz, range 63-77 kHz
  *     8 | uint32 | Number of strings sent since power up
 */
 
 // Sample: $1000042,0000002202,615,S64K,1285,0,24,69,11\r
-export const emitter = (elements: string[]) => {
-  const frame = 'emitter'
+export const emitter = (elements: string[]): Omit<Frame, 'raw'> => {
+  const name = 'emitter'
   const receiver: string = elements[0]
   const seconds: number = parseInt(elements[1])
   const milliseconds: number = parseInt(elements[2])
@@ -46,7 +47,7 @@ export const emitter = (elements: string[]) => {
   const frequency: number = parseInt(elements[7])
   const frameIndex: number = parseInt(elements[8])
   return {
-    frame,
+    name,
     data: [receiver, seconds, milliseconds, protocol, emitter, data, snr, frequency, frameIndex],
     fields: [
       { name: 'receiver', type: 'string', data: receiver },
@@ -54,13 +55,12 @@ export const emitter = (elements: string[]) => {
       { name: 'milliseconds', type: 'uint16', units: 'milliseconds', data: milliseconds },
       { name: 'protocol', type: 'string', data: protocol },
       { name: 'emitter', type: 'string', data: emitter },
-      { name: 'data', type: 'uint16', units: 'degrees', data: data, metadata: line },
+      { name: 'data', type: 'uint16', units: 'degrees', data, metadata: line },
       { name: 'snr', type: 'uint8', data: snr, metadata: signal },
       { name: 'frequency', type: 'uint8', units: 'kHz', data: frequency },
-      { name: 'frameIndex', type: 'uint32', data: frameIndex },
+      { name: 'frameIndex', type: 'uint32', data: frameIndex }
     ],
-    object: {
-      frame,
+    metadata: {
       receiver,
       sample: {
         timestamp: parseInt(`${seconds}${milliseconds}`),
@@ -69,11 +69,11 @@ export const emitter = (elements: string[]) => {
         protocol,
         angle: {
           avg: line.angle.degrees,
-          std: line.deviation.degrees,
+          std: line.deviation.degrees
         },
         snr,
         message: frameIndex
-      },
+      }
     }
   }
 }
@@ -90,8 +90,8 @@ export const emitter = (elements: string[]) => {
 */
 
 // Sample: $1000042,0000000600,TBR Sensor,297,15,29,69,6\r
-export const receiver = (elements: string[]) => {
-  const frame = 'receiver'
+export const receiver = (elements: string[]): Omit<Frame, 'raw'> => {
+  const name = 'receiver'
   const receiver: string = elements[0]
   const seconds: number = parseInt(elements[1])
   const log: string = elements[2]
@@ -103,7 +103,7 @@ export const receiver = (elements: string[]) => {
   const signal = getLineSNR(snr)
   const frameIndex = parseInt(elements[7])
   return {
-    frame,
+    name,
     data: [receiver, seconds, log, temperature, noiseAverage, noisePeak, snr, frameIndex],
     fields: [
       { name: 'receiver', type: 'string', data: receiver },
@@ -113,10 +113,9 @@ export const receiver = (elements: string[]) => {
       { name: 'noiseAverage', type: 'uint8', data: noiseAverage },
       { name: 'noisePeak', type: 'uint8', data: noisePeak },
       { name: 'snr', type: 'uint8', data: snr, metadata: signal },
-      { name: 'frameIndex', type: 'uint32', data: frameIndex },
+      { name: 'frameIndex', type: 'uint32', data: frameIndex }
     ],
-    object: {
-      frame,
+    metadata: {
       receiver,
       sample: {
         timestamp: parseInt(`${seconds}000`),
@@ -125,7 +124,7 @@ export const receiver = (elements: string[]) => {
         noise: {
           average: noiseAverage,
           peak: noisePeak,
-          snr: { value: snr, signal: signal.signal },
+          snr: { value: snr, signal: signal.signal }
         },
         message: frameIndex
       }

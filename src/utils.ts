@@ -8,14 +8,14 @@ export const utf8ToAscii = (text: string): string => {
   return (new TextDecoder('ascii')).decode(bytes)
 }
 
-export const getLineData = (data: number) => {
+export const getLineData = (data: number): { raw: number, angle: { raw: number, degrees: number }, deviation: { raw: number, degrees: number } } => {
   const angle = 0b000_0000_0011_1111_1111 & data
   const deviation = (0b0000_1111_1100_0000_0000 & data) >>> EMITTER_ANGLE_BIT_LENGTH
   return {
     raw: data,
     angle: {
       raw: angle,
-      degrees: angle / EMITTER_ANGLE_FACTOR,
+      degrees: angle / EMITTER_ANGLE_FACTOR
     },
     deviation: {
       raw: deviation,
@@ -24,10 +24,10 @@ export const getLineData = (data: number) => {
   }
 }
 
-export const getLineSNR = (snr: number) => {
+export const getLineSNR = (snr: number): { signal: 'weak' | 'regular' | 'strong' } => {
   if (snr > 25) return { signal: 'strong' }
   if (snr > 6) return { signal: 'regular' }
   return { signal: 'weak' }
 }
 
-export const getLinesTemperature = (temperature: number) => ({ degrees: (temperature - 50) / 10 })
+export const getLinesTemperature = (temperature: number): { degrees: number } => ({ degrees: (temperature - 50) / 10 })

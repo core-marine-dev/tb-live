@@ -1,19 +1,20 @@
-import { API_END } from "../../../constants"
+import { API_END } from '../../../constants'
+import { type Frame } from '../../../types'
 
-export const parseAPI = (text: string) => {
-  const frame = 'api'
+export const parseAPI = (text: string): Frame => {
+  const name = 'api'
   // Incomplete Frame
   const endIndex = text.indexOf(API_END)
-  if (endIndex === -1) { return { frame, raw: text, error: 'frame incomplete' } }
+  if (endIndex === -1) { return { name, raw: text, error: 'frame incomplete' } }
   // Get API
   const raw = text.slice(0, endIndex + API_END.length)
   return {
-    frame,
+    name,
     raw,
     data: [raw],
     fields: [{ name: 'api', type: 'string', data: raw }],
-    object: {
-      api: raw,
+    metadata: {
+      api: raw
     }
   }
 }

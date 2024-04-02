@@ -1,8 +1,8 @@
-import * as v from 'valibot'
+import type * as v from 'valibot'
 import {
-  EmitterSchema, FirmwareSchema, FrequencySchema, ModeSchema, ReceiverSchema, SerialNumberSchema
-} from "./schemas";
-import { FLAGS_COMMAND, FLAGS_LISTENING, LISTENING_FRAMES } from './constants';
+  type EmitterSchema, type FirmwareSchema, type FrequencySchema, type ModeSchema, type ReceiverSchema, type SerialNumberSchema
+} from './schemas'
+import { type FLAGS_COMMAND, type FLAGS_LISTENING, type LISTENING_FRAMES } from './constants'
 
 // TB LIVE
 export type SerialNumber = v.Input<typeof SerialNumberSchema>
@@ -20,9 +20,34 @@ export type FramesParser = (text: string) => [TODO[], string]
 export type MapModeParser = Map<Mode, FramesParser>
 export type MapFirmwareParser = Map<Firmware, MapModeParser>
 
-
 export type FLAG = typeof FLAGS_LISTENING[number] | typeof FLAGS_COMMAND[number]
 export type FLAGS = typeof FLAGS_LISTENING | typeof FLAGS_COMMAND
+
+export type Data = boolean | string | number
+export type Type = 'boolean' | 'string' | 'number' | 'int8' | 'int16' | 'int32' | 'uint8' | 'uint16' | 'uint32'
+export interface Field {
+  name: string,
+  type: Type,
+  units?: string,
+  data: Data,
+  metadata?: any
+}
+
+export interface Frame {
+  name: string,
+  raw: string,
+  error?: string | object,
+  data?: Data[],
+  fields?: Field[],
+  metadata?: any
+}
+
+export interface ParsedFrame {
+  frame: Frame | null,
+  remainder: string
+}
+
+
 // LISTENING
 // type AcousticSensorSample = {
 //   raw: string,           // Raw string with the sample data
@@ -34,7 +59,7 @@ export type FLAGS = typeof FLAGS_LISTENING | typeof FLAGS_COMMAND
 // 		deviation: Float32, // 0.0° - 15.75° ±0.15° -> 6 bits = 0 - 63   /  4
 // 	  raw: uint16,
 // 	},
-// 	snr: uint8,           // snr <= 6 = weak signal | 6 < snr < 25 = regular signal | 25 <= snr = strong signal ||  6 < snr < 60 typical values  
+// 	snr: uint8,           // snr <= 6 = weak signal | 6 < snr < 25 = regular signal | 25 <= snr = strong signal ||  6 < snr < 60 typical values
 // 	timestamp: {
 // 		sample: string,    // UNIX Epoch in milliseconds
 // 		read: string       // UNIX Epoch in milliseconds
@@ -45,7 +70,7 @@ export type FLAGS = typeof FLAGS_LISTENING | typeof FLAGS_COMMAND
 // type AcousticSensor = {
 // 	serial_number: string, // 6 digits - odd numbers - excluded 104-105-106-107-110-111
 // 	frequency: uint8,      // 63 - 77 KHz
-// 	samples: AcousticSensorSample[]	
+// 	samples: AcousticSensorSample[]
 // }
 
 // type HydrophoneSample = {

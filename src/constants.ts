@@ -1,4 +1,3 @@
-
 export const FIELD_TYPE = ['int8', 'int16', 'int32', 'uint8', 'uint16', 'uint32', 'string', 'boolean'] as const
 
 export const FIRMWARES_AVAILABLE = ['1.0.1', '1.0.2'] as const
@@ -62,7 +61,6 @@ export const CLOCK_ROUND = 'ack01\r'
 export const CLOCK_SET = 'ack02\r'
 
 export const FLAGS_LISTENING = [SAMPLE_START, PING_START, CLOCK_ROUND, CLOCK_SET] as const
-
 
 // export const MODES = ['listening', 'command', 'update'] as const
 export const MODES = ['listening', 'command'] as const

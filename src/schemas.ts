@@ -1,5 +1,4 @@
 import * as v from 'valibot'
-
 import { FIRMWARES_AVAILABLE, FREQUENCY_MAX, FREQUENCY_MIN, MODES, PING_END, PING_LENGTH_MAX, PING_LENGTH_MIN, PING_START } from './constants'
 import { Uint8Schema } from '@schemasjs/valibot-numbers'
 // COMMONS
@@ -24,7 +23,7 @@ export const FrequencySchema = v.number(
     v.integer('Frequency: It should be an integer'),
     v.minValue(63, 'Frequency: It should greater equal to 63'),
     v.maxValue(77, 'Frequency: It should lesser equal to 77')
-])
+  ])
 
 // export const FirmwareSchema = v.picklist(FIRMWARES_AVAILABLE, 'Firmware: It should be "1.0.1" or "1.0.2"')
 export const FirmwareSchema = v.string([
@@ -73,9 +72,9 @@ export const ReceiverSchema = v.object(
     v.forward(
       v.custom(
         ({ frequency, emitters }) => emitters.map(emitter => emitter.frequency).filter(freq => [frequency - 2, frequency, frequency + 2].includes(freq)).length === emitters.length,
-        `Receiver: All emitters frequencies should be equal to TB-Live frequency or ± 2 kHz`),
+        'Receiver: All emitters frequencies should be equal to TB-Live frequency or ± 2 kHz'),
       ['emitters']
-    ),
+    )
   ]
 )
 // FRAMES
@@ -87,7 +86,7 @@ export const PingResponseInputSchema = v.string([
   v.custom(input => {
     const sn = ((input.split(PING_START))[1].split(PING_END))[0]
     return v.safeParse(SerialNumberSchema, sn).success
-  },   'PingResponse: It should contain a valid serial number')
+  }, 'PingResponse: It should contain a valid serial number')
 ])
 
 export const PingResponseOutputSchema = v.transform(

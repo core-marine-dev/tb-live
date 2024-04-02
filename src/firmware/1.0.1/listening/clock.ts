@@ -1,6 +1,8 @@
-export const parseClock = (text: string, clock: 'round' | 'set') => (
+import { type Frame } from "../../../types";
+
+export const parseClock = (text: string, clock: 'round' | 'set'): Pick<Frame, 'name' | 'raw'> => (
   {
-    raw: text,
-    frame: (clock === 'round') ? 'round clock' : 'set clock'
+    name: (clock === 'round') ? 'round clock' : 'set clock',
+    raw: text
   }
 )
