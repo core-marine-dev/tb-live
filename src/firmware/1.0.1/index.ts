@@ -1,9 +1,10 @@
-import { type FLAG, type Mode, type TODO } from '../../types'
+import type { FirmwareFrame, ListeningParsingFrame, CommandParsingFrame, ParsingFrame, Parser } from '../../types'
 import { parse as listeningFrame } from './listening'
 import { parse as commandFrame } from './command'
 import { API_END, API_START, FLAGS_COMMAND, FLAGS_LISTENING, PING_END, PING_LENGTH_MAX, PING_START, SERIAL_NUMBER_START } from '../../constants'
 
-export const getFramesIndexListening = (text: string): { index: number, flag: typeof FLAGS_LISTENING[number], last: boolean, mode: 'listening' } | null => {
+export const getFramesIndexListening = (text: string): ListeningParsingFrame | null => {
+  const mode = 'listening'
   const frames = [...FLAGS_LISTENING]
     .map(flag => {
       // Flag no Ping
@@ -28,13 +29,13 @@ export const getFramesIndexListening = (text: string): { index: number, flag: ty
       if (a.index > b.index) return 1
       return 0
     })
-  if (frames.length > 1) return { ...frames[0], last: false, mode: 'listening' }
-  if (frames.length === 1) return { ...frames[0], last: true, mode: 'listening' }
+  if (frames.length > 1) return { ...frames[0], last: false, mode }
+  if (frames.length === 1) return { ...frames[0], last: true, mode }
   return null
 }
 
-
-export const getFramesIndexCommand = (text: string): { index: number, flag: typeof FLAGS_COMMAND[number], last: boolean, mode: 'command' } | null => {
+export const getFramesIndexCommand = (text: string): CommandParsingFrame | null => {
+  const mode = 'command'
   const apiStartIndex = text.indexOf(API_START)
   const apiEndIndex = text.indexOf(API_END, (apiStartIndex !== -1) ? apiStartIndex : 0)
 
@@ -67,12 +68,12 @@ export const getFramesIndexCommand = (text: string): { index: number, flag: type
       if (a.index > b.index) return 1
       return 0
     })
-  if (frames.length > 1) return { ...frames[0], last: false, mode: 'command' }
-  if (frames.length === 1) return { ...frames[0], last: true, mode: 'command' }
+  if (frames.length > 1) return { ...frames[0], last: false, mode }
+  if (frames.length === 1) return { ...frames[0], last: true, mode }
   return null
 }
 
-export const getFrameToParse = (text: string): { index: number, flag: FLAG, last: boolean, mode: Mode } | null => {
+export const getFrameToParse = (text: string): ParsingFrame | null => {
   const listening = getFramesIndexListening(text)
   const command = getFramesIndexCommand(text)
   // Just listening
@@ -84,35 +85,40 @@ export const getFrameToParse = (text: string): { index: number, flag: FLAG, last
   // Listening before
   if (listening.index < command.index) return { ...listening, last: false }
   // Command before
+  // If firmware change -> last frame
+  // if (command.flag === FIRMWARE_START) return { ...command, last: true }
+  // Regular command
   return { ...command, last: false }
 }
 
-export const parse = (input: string): { frames: TODO[], nonparsed: string, firmwareChange: boolean } => {
-  let text = input
-  const frames: TODO[] = []
+export const parser: Parser = (input: string) => {
+  let nonparsed = input
+  const frames: FirmwareFrame[] = []
   let firmwareChange = false
-  while (text.length > 0) {
-    const frameToParse = getFrameToParse(text)
+  while (nonparsed.length > 0) {
+    const frameToParse = getFrameToParse(nonparsed)
     if (frameToParse === null) {
-      text = ''
+      nonparsed = ''
       break
     }
     const { index, flag, last, mode } = frameToParse
-    text = text.slice(index)
+    nonparsed = nonparsed.slice(index)
+
     const { frame, remainder } = (mode === 'listening')
-      ? listeningFrame(text, flag as typeof FLAGS_LISTENING[number])
-      : commandFrame(text, flag as typeof FLAGS_COMMAND[number])
-    text = remainder
+      ? listeningFrame(nonparsed, flag as typeof FLAGS_LISTENING[number])
+      : commandFrame(nonparsed, flag as typeof FLAGS_COMMAND[number])
+    
+    nonparsed = remainder
     if (frame !== null) {
-      frames.push(frame)
+      frames.push({ ...frame, firmware: '1.0.1' })
+      if (mode === 'command' && frame.name === 'firmware') {
+        firmwareChange = true
+        break
     }
-    if (mode === 'command' && frame.frame === 'firmware') {
-      firmwareChange = true
-      break
     }
     if (last) {
       break
     }
   }
-  return { frames, nonparsed: text, firmwareChange }
+  return { frames, nonparsed, firmwareChange }
 }

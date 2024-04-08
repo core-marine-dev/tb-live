@@ -1,4 +1,4 @@
-import { MapFirmwareParser } from "../types";
+import type { MapFirmwareParser } from '../types'
 import { parser as Parser101 } from './1.0.1'
 import { parser as Parser102 } from './1.0.2'
 

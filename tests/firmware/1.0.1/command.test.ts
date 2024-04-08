@@ -1,11 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import * as v from 'valibot'
 import { serialNumber, firmware, frequency, logInterval, protocols, timestamp, api, restart, factoryReset, upgradeFirmware } from '../../../src/firmware/1.0.1/command'
-import { API_END, API_START, FACTORY_RESET, FIRMWARES_AVAILABLE, FIRMWARE_START, FREQUENCY_START, LOG_INTERVAL_START, PROTOCOLS_START, RESTART_DEVICE, SERIAL_NUMBER_START, TIMESTAMP_START, UPGRADE_FIRMWARE } from '../../../src/constants'
+import { API_END, API_START, FACTORY_RESET, FIRMWARES_AVAILABLE, FIRMWARE_START, FREQUENCY_START, LOG_INTERVALS, LOG_INTERVAL_START, PROTOCOLS, PROTOCOLS_START, RESTART_DEVICE, SERIAL_NUMBER_START, TIMESTAMP_START, UPGRADE_FIRMWARE } from '../../../src/constants'
 import { FrequencySchema, SerialNumberSchema } from '../../../src/schemas'
-import { LOG_INTERVALS } from '../../../src/firmware/1.0.1/command/log-interval'
-import { PROTOCOLS } from '../../../src/firmware/1.0.1/command/protocol'
-import { type ParsedFrame } from '../../../src/types'
+import type { ParsedFrame } from '../../../src/types'
 
 describe('serial number', () => {
   const name = 'serial number'
@@ -22,7 +20,7 @@ describe('serial number', () => {
         data: [sn],
         fields: [{ name: 'serial number', type: 'string', data: sn }],
         metadata: {
-          serialNumber: sn
+          receiver: sn
         }
       }
     }

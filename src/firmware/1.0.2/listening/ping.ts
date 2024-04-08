@@ -1,27 +1,25 @@
 import * as v from 'valibot'
-import { PING_FLAG_END, PING_FLAG_START } from "../../../constants"
 import { SerialNumberSchema } from '../../../schemas'
+import { PING_END, PING_START } from '../../../constants'
+import type { Frame, ListeningPingFrame } from '../../../types'
 
 /**
  * PING:
  * Request -> ?
  * Response -> SN=XXXXXXX ><>\r
 */
-export const parsePing = (text: string) => {
-  const frame = 'ping'
+export const parsePing = (text: string): ListeningPingFrame | Frame => {
+  const name = 'ping'
   const raw = text
-  const sn = text.slice(PING_FLAG_START.length, -PING_FLAG_END.length).trim()
+  const sn = text.slice(PING_START.length, -PING_END.length).trim()
   const parse = v.safeParse(SerialNumberSchema, sn)
-  if (!parse.success) return { raw, frame, error: parse.issues[0].message }
+  if (!parse.success) return { raw, name, error: parse.issues[0].message }
   const receiver = parse.output
   return {
     raw: text,
-    frame,
+    name,
     data: [receiver],
     fields: [{ name: 'receiver', type: 'string', data: receiver }],
-    object: {
-      frame,
-      receiver
-    }
+    metadata: { receiver }
   }
 }

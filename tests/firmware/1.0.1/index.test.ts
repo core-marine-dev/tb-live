@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { getFrameToParse, getFramesIndexCommand, getFramesIndexListening, parse } from '../../../src/firmware/1.0.1'
+import { getFrameToParse, getFramesIndexCommand, getFramesIndexListening, parser } from '../../../src/firmware/1.0.1'
 import { API_START, CLOCK_ROUND, CLOCK_SET, FACTORY_RESET, FIRMWARE_START, FLAGS_COMMAND, FLAGS_LISTENING, FREQUENCY_START, LOG_INTERVAL_START, PING_END, PING_START, PROTOCOLS_START, RESTART_DEVICE, SAMPLE_START, SERIAL_NUMBER_START, TIMESTAMP_START, UPGRADE_FIRMWARE } from '../../../src/constants'
 
 // Listening
@@ -232,7 +232,7 @@ describe('parse', () => {
       `${garbage}${listeningEmitter}${listeningRoundClock}${listeningPing}${garbage}${listeningReceiver}${listeningSetClock}`,
       `${garbage}${listeningReceiver}${listeningRoundClock}${listeningPing}${garbage}${listeningEmitter}${listeningSetClock}`,
     ].forEach((fr) => {
-      const { frames, nonparsed, firmwareChange } = parse(fr)
+      const { frames, nonparsed, firmwareChange } = parser(fr)
       expect(frames).toHaveLength(5)
       expect(nonparsed).toHaveLength(0)
       expect(firmwareChange).toBeFalsy()
@@ -247,7 +247,7 @@ describe('parse', () => {
       `${garbage}${listeningEmitter}${listeningRoundClock}${listeningPing}${garbage}${listeningReceiver}${listeningSetClock}`,
       `${garbage}${listeningReceiver}${listeningRoundClock}${listeningPing}${garbage}${listeningReceiver}${listeningSetClock}`,
     ].forEach((fr) => {
-      const { frames, nonparsed, firmwareChange } = parse(fr)
+      const { frames, nonparsed, firmwareChange } = parser(fr)
       expect(frames).toHaveLength(5)
       expect(nonparsed).toHaveLength(0)
       expect(firmwareChange).toBeFalsy()

@@ -1,4 +1,4 @@
-import { type ParsedFrame } from '../../../types'
+import type { ParsedFrame } from '../../../types'
 import { API_START, FACTORY_RESET, FIRMWARE_START, FREQUENCY_FRAME_LENGTH, LOG_INTERVAL_FRAME_LENGTH, PROTOCOLS_FRAME_LENGTH, RESTART_DEVICE, SERIAL_NUMBER_FRAME_LENGTH_MAX, TIMESTAMP_FRAME_LENGTH, UPGRADE_FIRMWARE, type FLAGS_COMMAND, FREQUENCY_START, LOG_INTERVAL_START, PROTOCOLS_START, SERIAL_NUMBER_START, TIMESTAMP_START } from '../../../constants'
 import { parseSerialNumber } from './serial-number'
 import { parseFrequency } from './frequency'

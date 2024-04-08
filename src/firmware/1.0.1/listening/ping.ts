@@ -1,14 +1,14 @@
 import * as v from 'valibot'
 import { SerialNumberSchema } from '../../../schemas'
 import { PING_END, PING_START } from '../../../constants'
-import { type Frame } from '../../../types'
+import type { Frame, ListeningPingFrame } from '../../../types'
 
 /**
  * PING:
  * Request -> ?
  * Response -> SN=XXXXXXX ><>\r
 */
-export const parsePing = (text: string): Frame => {
+export const parsePing = (text: string): ListeningPingFrame | Frame => {
   const name = 'ping'
   const raw = text
   const sn = text.slice(PING_START.length, -PING_END.length).trim()

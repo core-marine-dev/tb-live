@@ -1,8 +1,8 @@
 import { SAMPLE_END, SAMPLE_SPLIT, SAMPLE_START } from '../../../constants'
-import { type Frame } from '../../../types'
+import type { Frame, ListeningEmitterFrame, ListeningReceiverFrame } from '../../../types'
 import { getLineData, getLineSNR, getLinesTemperature } from '../../../utils'
 
-export const parseSample = (raw: string): Frame => {
+export const parseSample = (raw: string): Frame | ListeningEmitterFrame | ListeningReceiverFrame => {
   const data = raw.slice(SAMPLE_START.length, -SAMPLE_END.length).split(SAMPLE_SPLIT)
   // Emitter
   if (data.length === 9) return { ...emitter(data), raw }
@@ -32,8 +32,10 @@ export const parseSample = (raw: string): Frame => {
  *     8 | uint32 | Number of strings sent since power up
 */
 
+
+
 // Sample: $1000042,0000002202,615,S64K,1285,0,24,69,11\r
-export const emitter = (elements: string[]): Omit<Frame, 'raw'> => {
+export const emitter = (elements: string[]): Omit<ListeningEmitterFrame, 'raw'> => {
   const name = 'emitter'
   const receiver: string = elements[0]
   const seconds: number = parseInt(elements[1])
@@ -71,7 +73,10 @@ export const emitter = (elements: string[]): Omit<Frame, 'raw'> => {
           avg: line.angle.degrees,
           std: line.deviation.degrees
         },
-        snr,
+        snr: {
+          value: signal.raw,
+          signal: signal.signal
+        },
         message: frameIndex
       }
     }
@@ -90,7 +95,7 @@ export const emitter = (elements: string[]): Omit<Frame, 'raw'> => {
 */
 
 // Sample: $1000042,0000000600,TBR Sensor,297,15,29,69,6\r
-export const receiver = (elements: string[]): Omit<Frame, 'raw'> => {
+export const receiver = (elements: string[]): Omit<ListeningReceiverFrame, 'raw'> => {
   const name = 'receiver'
   const receiver: string = elements[0]
   const seconds: number = parseInt(elements[1])

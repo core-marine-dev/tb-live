@@ -1,5 +1,5 @@
 import { CLOCK_ROUND, CLOCK_SET, type FLAGS_LISTENING, PING_END, PING_START, SAMPLE_END, SAMPLE_START } from '../../../constants'
-import { type ParsedFrame } from '../../../types'
+import type { ParsedFrame } from '../../../types'
 import { parseClock } from './clock'
 import { parsePing } from './ping'
 import { parseSample } from './sample'
