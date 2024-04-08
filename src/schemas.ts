@@ -1,6 +1,5 @@
 import * as v from 'valibot'
 import { FIRMWARES_AVAILABLE, FREQUENCY_MAX, FREQUENCY_MIN, MODES, PING_END, PING_LENGTH_MAX, PING_LENGTH_MIN, PING_START } from './constants'
-import { Uint8Schema } from '@schemasjs/valibot-numbers'
 // COMMONS
 export const StringSchema = v.string()
 export const StringArraySchema = v.array(StringSchema)
@@ -27,14 +26,15 @@ export const FrequencySchema = v.number(
 
 // export const FirmwareSchema = v.picklist(FIRMWARES_AVAILABLE, 'Firmware: It should be "1.0.1" or "1.0.2"')
 export const FirmwareSchema = v.string([
-  v.custom(input => FIRMWARES_AVAILABLE.some(fw => input.includes(fw)), `Firmware: available firmwares are ${FIRMWARES_AVAILABLE}`)
+  v.custom(input => FIRMWARES_AVAILABLE.some(fw => input.includes(fw)), `Firmware: available firmwares are ${FIRMWARES_AVAILABLE.toString()}`)
 ])
 
 export const ModeSchema = v.picklist(MODES, 'Mode: It should be "listening" or "command" or "update"')
 
+
 export const EmitterSchema = v.object({
   serialNumber: SerialNumberSchema,
-  frequency: Uint8Schema
+  frequency: FrequencySchema
 })
 
 export const ReceiverSchema = v.object(
@@ -42,36 +42,44 @@ export const ReceiverSchema = v.object(
     serialNumber: SerialNumberSchema,
     frequency: FrequencySchema,
     firmware: FirmwareSchema,
-    mode: ModeSchema,
-    emitters: v.array(EmitterSchema, [
+    mode: v.optional(ModeSchema),
+    emitters: v.optional(v.array(EmitterSchema, [
       v.minLength(1, 'Receiver: It should be at least one emitter'),
       v.maxLength(3, 'Receiver: It should be only three emitters as maximum')
-    ])
+    ]))
   },
   [
     v.forward(
       v.custom(
-        ({ emitters }) => (new Set(emitters.map(emitter => emitter.serialNumber))).size === emitters.length,
+        ({ emitters }) => ((emitters === undefined)
+          ? true :
+          new Set(emitters.map(emitter => emitter.serialNumber)).size === emitters.length),
         'Receiver: All emitters serial number should be different between them'
       ),
       ['emitters']
     ),
     v.forward(
       v.custom(
-        ({ emitters }) => (new Set(emitters.map(emitter => emitter.frequency))).size === emitters.length,
+        ({ emitters }) => ((emitters === undefined)
+          ? true
+          : new Set(emitters.map(emitter => emitter.frequency)).size === emitters.length),
         'Receiver: All emitters frequencies should be different between them'
       ),
       ['emitters']
     ),
     v.forward(
       v.custom(
-        ({ emitters }) => emitters.map(emitter => emitter.frequency).every(freq => (freq >= FREQUENCY_MIN) && (freq <= FREQUENCY_MAX)),
+        ({ emitters }) => ((emitters === undefined)
+          ? true
+          : emitters.map(emitter => emitter.frequency).every(freq => (freq >= FREQUENCY_MIN) && (freq <= FREQUENCY_MAX))),
         `Receiver: All emitters frequencies should be between ${FREQUENCY_MIN} and ${FREQUENCY_MAX} kHz`),
       ['emitters']
     ),
     v.forward(
       v.custom(
-        ({ frequency, emitters }) => emitters.map(emitter => emitter.frequency).filter(freq => [frequency - 2, frequency, frequency + 2].includes(freq)).length === emitters.length,
+        ({ frequency, emitters }) => ((emitters === undefined)
+          ? true
+          : emitters.map(emitter => emitter.frequency).filter(freq => [frequency - 2, frequency, frequency + 2].includes(freq)).length === emitters.length),
         'Receiver: All emitters frequencies should be equal to TB-Live frequency or ± 2 kHz'),
       ['emitters']
     )
