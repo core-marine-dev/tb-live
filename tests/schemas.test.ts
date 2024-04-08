@@ -126,16 +126,26 @@ describe('Receiver', () => {
     if (!result.success) {
       expect(result.issues[0].message).toBe('Receiver: All emitters frequencies should be different between them')
     }
-    // Frequencies should +- 2 KHz of receiver frequency
+    // Frequencies should be 62 < freq < 77 KHz
     receiver.emitters = [
       { serialNumber: '111111', frequency: 50 },
-      { serialNumber: '222222', frequency: 80 },
-      { serialNumber: '333333', frequency: 200 },
+      { serialNumber: '222222', frequency: 69 },
+      { serialNumber: '333333', frequency: 70 },
     ]
     result = v.safeParse(ReceiverSchema, receiver)
     expect(result.success).toBeFalsy()
     if (!result.success) {
-      expect(result.issues[0].message).toBe(`Receiver: All emitters frequencies should be between ${FREQUENCY_MIN} and ${FREQUENCY_MAX} kHz`)
+      expect(result.issues[0].message).toBe('Frequency: It should greater equal to 63')
+    }
+    receiver.emitters = [
+      { serialNumber: '111111', frequency: 64 },
+      { serialNumber: '222222', frequency: 69 },
+      { serialNumber: '333333', frequency: 80 },
+    ]
+    result = v.safeParse(ReceiverSchema, receiver)
+    expect(result.success).toBeFalsy()
+    if (!result.success) {
+      expect(result.issues[0].message).toBe('Frequency: It should lesser equal to 77')
     }
     // Frequencies should +- 2 KHz of receiver frequency
     receiver.emitters = [
