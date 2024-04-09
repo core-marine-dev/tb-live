@@ -42,6 +42,7 @@ export interface ParsedFrame {
 
 export interface FirmwareFrame extends Frame {
   firmware: Firmware,
+  mode: Mode,
   errorFirmware?: string
 }
 
