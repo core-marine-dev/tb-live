@@ -1,7 +1,7 @@
 import type { FirmwareFrame, ListeningParsingFrame, CommandParsingFrame, ParsingFrame, Parser } from '../../types'
 import { parse as listeningFrame } from './listening'
 import { parse as commandFrame } from './command'
-import { API_END, API_START, FLAGS_COMMAND, FLAGS_LISTENING, PING_END, PING_LENGTH_MAX, PING_START, SERIAL_NUMBER_START } from '../../constants'
+import { API_END, API_START, FLAGS_COMMAND, FLAGS_LISTENING, PING_END, PING_LENGTH_MAX, PING_START, SAMPLE_START, SERIAL_NUMBER_START } from '../../constants'
 
 export const getFramesIndexListening = (text: string): ListeningParsingFrame | null => {
   const mode = 'listening'
@@ -30,7 +30,12 @@ export const getFramesIndexListening = (text: string): ListeningParsingFrame | n
       return 0
     })
   if (frames.length > 1) return { ...frames[0], last: false, mode }
-  if (frames.length === 1) return { ...frames[0], last: true, mode }
+  if (frames.length === 1) {
+    const sampleFirstIndex = text.indexOf(SAMPLE_START)
+    const sampleLastIndex = text.lastIndexOf(SAMPLE_START)
+    const last = (sampleFirstIndex !== -1) ? sampleFirstIndex === sampleLastIndex : true
+    return { ...frames[0], last, mode }
+  }
   return null
 }
 
