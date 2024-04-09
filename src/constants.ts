@@ -2,6 +2,11 @@ export const FIELD_TYPE = ['int8', 'int16', 'int32', 'uint8', 'uint16', 'uint32'
 
 export const FIRMWARES_AVAILABLE = ['1.0.1', '1.0.2'] as const
 
+export const MODES = ['listening', 'command'] as const
+export const LISTENING_MODE = 'EX!'
+export const COMMAND_MODE = 'LIVECM'
+export const UPDATE_MODE = 'UF!'
+
 // COMMAND FLAGS
 export const SERIAL_NUMBER_START = 'SN='
 export const SERIAL_NUMBER_LENGTH_MIN = 6
@@ -87,7 +92,7 @@ export const RESTART_DEVICE = 'RR!'
 export const FACTORY_RESET = 'FS!'
 export const UPGRADE_FIRMWARE = 'UF!'
 
-export const FLAGS_COMMAND = [SERIAL_NUMBER_START, FIRMWARE_START, FREQUENCY_START, LOG_INTERVAL_START, PROTOCOLS_START, TIMESTAMP_START, API_START, RESTART_DEVICE, FACTORY_RESET, UPGRADE_FIRMWARE] as const
+export const FLAGS_COMMAND = [SERIAL_NUMBER_START, FIRMWARE_START, FREQUENCY_START, LOG_INTERVAL_START, PROTOCOLS_START, TIMESTAMP_START, API_START, RESTART_DEVICE, FACTORY_RESET, UPGRADE_FIRMWARE, COMMAND_MODE, LISTENING_MODE] as const
 // LISTENING MODE
 export const SAMPLE_START = '$'
 export const SAMPLE_END = '\r'
@@ -105,13 +110,8 @@ export const CLOCK_SET = 'ack02\r'
 export const FLAGS_LISTENING = [SAMPLE_START, PING_START, CLOCK_ROUND, CLOCK_SET] as const
 
 // export const MODES = ['listening', 'command', 'update'] as const
-export const MODES = ['listening', 'command'] as const
 
 export const LISTENING_FRAMES = ['sample', 'ping', 'roundClock', 'setClock'] as const
-
-export const LISTENING_MODE = 'EX!'
-export const COMMAND_MODE = 'LIVECM'
-export const UPDATE_MODE = 'UF!'
 
 export const EMITTER_ANGLE_BIT_LENGTH = 10
 export const EMITTER_ANGLE_FACTOR = 10
