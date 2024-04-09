@@ -110,7 +110,7 @@ export const parser: Parser = (input: string) => {
     
     nonparsed = remainder
     if (frame !== null) {
-      frames.push({ ...frame, firmware: '1.0.1' })
+      frames.push({ ...frame, firmware: '1.0.1', mode })
       if (mode === 'command' && frame.name === 'firmware') {
         firmwareChange = true
         break

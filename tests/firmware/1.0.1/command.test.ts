@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import * as v from 'valibot'
-import { serialNumber, firmware, frequency, logInterval, protocols, timestamp, api, restart, factoryReset, upgradeFirmware } from '../../../src/firmware/1.0.1/command'
-import { API_END, API_START, FACTORY_RESET, FIRMWARES_AVAILABLE, FIRMWARE_START, FREQUENCY_START, LOG_INTERVALS, LOG_INTERVAL_START, PROTOCOLS, PROTOCOLS_START, RESTART_DEVICE, SERIAL_NUMBER_START, TIMESTAMP_START, UPGRADE_FIRMWARE } from '../../../src/constants'
+import { serialNumber, firmware, frequency, logInterval, protocols, timestamp, api, restart, factoryReset, upgradeFirmware, commandModeON, commandModeOFF } from '../../../src/firmware/1.0.1/command'
+import { API_END, API_START, COMMAND_MODE, FACTORY_RESET, FIRMWARES_AVAILABLE, FIRMWARE_START, FREQUENCY_START, LISTENING_MODE, LOG_INTERVALS, LOG_INTERVAL_START, PROTOCOLS, PROTOCOLS_START, RESTART_DEVICE, SERIAL_NUMBER_START, TIMESTAMP_START, UPGRADE_FIRMWARE } from '../../../src/constants'
 import { FrequencySchema, SerialNumberSchema } from '../../../src/schemas'
 import type { ParsedFrame } from '../../../src/types'
 
@@ -474,6 +474,33 @@ test('upgrade firmware', () => {
     remainder: '',
     frame: {
       name: 'upgrade firmware',
+      raw: input,
+    }
+  }
+  expect(output).toEqual(expected)
+})
+
+test('command mode ON', () => {
+  [COMMAND_MODE, 'TBRC'].forEach(input => {
+    const output = commandModeON(input)
+    const expected: ParsedFrame = {
+      remainder: '',
+      frame: {
+        name: 'command mode on',
+        raw: COMMAND_MODE,
+      }
+    }
+    expect(output).toEqual(expected)
+  })
+})
+
+test('command mode OFF', () => {
+  const input = LISTENING_MODE
+  const output = commandModeOFF(input)
+  const expected: ParsedFrame = {
+    remainder: '',
+    frame: {
+      name: 'command mode off',
       raw: input,
     }
   }
