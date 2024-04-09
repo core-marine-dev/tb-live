@@ -1,5 +1,5 @@
 import type { ParsedFrame } from '../../../types'
-import { API_START, FACTORY_RESET, FIRMWARE_START, FREQUENCY_FRAME_LENGTH, LOG_INTERVAL_FRAME_LENGTH, PROTOCOLS_FRAME_LENGTH, RESTART_DEVICE, SERIAL_NUMBER_FRAME_LENGTH_MAX, TIMESTAMP_FRAME_LENGTH, UPGRADE_FIRMWARE, type FLAGS_COMMAND, FREQUENCY_START, LOG_INTERVAL_START, PROTOCOLS_START, SERIAL_NUMBER_START, TIMESTAMP_START } from '../../../constants'
+import { API_START, FACTORY_RESET, FIRMWARE_START, FREQUENCY_FRAME_LENGTH, LOG_INTERVAL_FRAME_LENGTH, PROTOCOLS_FRAME_LENGTH, RESTART_DEVICE, SERIAL_NUMBER_FRAME_LENGTH_MAX, TIMESTAMP_FRAME_LENGTH, UPGRADE_FIRMWARE, type FLAGS_COMMAND, FREQUENCY_START, LOG_INTERVAL_START, PROTOCOLS_START, SERIAL_NUMBER_START, TIMESTAMP_START, COMMAND_MODE, LISTENING_MODE } from '../../../constants'
 import { parseSerialNumber } from './serial-number'
 import { parseFrequency } from './frequency'
 import { parseLogInterval } from './log-interval'
@@ -105,6 +105,22 @@ export const upgradeFirmware = (text: string): ParsedFrame => ({
   }
 })
 
+export const commandModeON = (text: string): ParsedFrame => ({
+  remainder: text.slice(COMMAND_MODE.length),
+  frame: {
+    name: 'command mode on',
+    raw: COMMAND_MODE
+  }
+})
+
+export const commandModeOFF = (text: string): ParsedFrame => ({
+  remainder: text.slice(LISTENING_MODE.length),
+  frame: {
+    name: 'command mode off',
+    raw: LISTENING_MODE
+  }
+})
+
 export const commands = {
   'SN=': serialNumber,
   'FV=': firmware,
@@ -115,7 +131,10 @@ export const commands = {
   'In Command Mode': api,
   'RR!': restart,
   'FS!': factoryReset,
-  'UF!': upgradeFirmware
+  'UF!': upgradeFirmware,
+  'LIVECM': commandModeON,
+  'TBRC': commandModeON,
+  'EX!': commandModeOFF,
 }
 
 export const parse = (input: string, flag: typeof FLAGS_COMMAND[number]): ParsedFrame => {
