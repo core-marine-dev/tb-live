@@ -1,3 +1,1 @@
-import { TBLive } from './tblive'
-
-export { TBLive }
+export { TBLive } from './tblive'

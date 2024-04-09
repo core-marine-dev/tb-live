@@ -1,122 +1,152 @@
 import * as v from 'valibot'
-import { FirmwareSchema, ModeSchema, StringSchema } from "./schemas"
-import { Firmware, ListeningFrame, MapFirmwareParser, Mode, Receiver, TODO } from "./types"
-import { COMMAND_MODE, LISTENING_MODE, PING_FLAG_START, ROUND_CLOCK_FLAG, SAMPLE_FLAG_START, SET_CLOCK_FLAG, UPDATE_MODE } from './constants'
+import { API_END, API_START, FIRMWARES_AVAILABLE, FIRMWARE_START } from './constants'
+import { FirmwareSchema, FrequencySchema, ReceiverSchema, StringSchema } from './schemas'
+import type { Parser, Firmware, Receiver, FirmwareFrame, OutputFrame, SerialNumber, Frequency, Emitter, ListeningEmitterFrame } from './types'
 import { firmwareParser } from './firmware'
 
 export class TBLive {
-  protected receiver: Receiver
-  protected parser: MapFirmwareParser = firmwareParser
-  protected buffer: string = ''
+  protected _parser: Parser
+  protected _buffer: string = ''
 
-  get firmware() { return this.receiver.firmware }
-  set firmware(fw: Firmware) { this.receiver.firmware = v.parse(FirmwareSchema, fw) }
+  protected _firmware: Firmware
+  get firmware(): Firmware { return this._firmware }
+  set firmware(fw: Firmware) {
+    this._firmware = v.parse(FirmwareSchema, fw)
+    const parser = firmwareParser.get(this.firmware)
+    if (parser !== undefined) {
+      this._parser = parser
+    }
+    if (this._receiver !== null) {
+      this._receiver.firmware = fw
+    }
+  }
 
-  get firmwares() { return FirmwareSchema.options }
+  get firmwares(): typeof FIRMWARES_AVAILABLE { return FIRMWARES_AVAILABLE }
 
-  get mode() { return this.receiver.mode }
-  set mode(m: Mode) { this.receiver.mode = v.parse(ModeSchema, m) }
+  protected _receiver: Receiver | null = null
+  get receiver(): Receiver | null { return (this._receiver !== null) ? { ...this._receiver } : null }
+  set receiver(receiver: Receiver) {
+    this._receiver = v.parse(ReceiverSchema, receiver)
+    if (this._receiver.firmware !== this._firmware) {
+      this._firmware = this._receiver.firmware
+    }
+  }
 
-  constructor(receiver: Receiver) { this.receiver = { ...receiver } }
+  constructor(firmware: Firmware = '1.0.1', receiver: Receiver | null = null) {
+    this._firmware = v.parse(FirmwareSchema, firmware)
+    const parser = firmwareParser.get(this._firmware)
+    if (parser === undefined) throw new Error(`Firmware ${firmware} is not supported`)
+    this._parser = parser
+    if (receiver !== null) {
+      this._receiver = { ...v.parse(ReceiverSchema, receiver) }
+      this._receiver.firmware = firmware
+    }
+  }
 
-  addData(data: string) { this.buffer += v.parse(StringSchema, data) }
+  protected checkEmitters(emitter: string, frequency: number, emitters: Emitter[]): string {
+    for (const _emitter of emitters) {
+      if (_emitter.serialNumber === emitter) {
+        return (_emitter.frequency === frequency) ? '' : `Invalid Emitter Frequency ${frequency} -> Valid ${_emitter.frequency}`
+      }
+    }
+    return `Invalid Emitter Serial Number ${emitter} -> Valid emitters are ${emitters.map(em => em.serialNumber).toString()}`
+  }
 
-  parseData(data: string = '') {
-    if (data) {
+  protected checkReceiver(frame: FirmwareFrame): string {
+    if (this._receiver === null) return ''
+    if (['emitter', 'receiver', 'ping', 'serial number'].every(name => frame.name !== name)) return ''
+    const receiverSerialNumber: SerialNumber = this._receiver.serialNumber
+    const { metadata } = frame
+    if (metadata === undefined) return ''
+    const frameSerialNumber: Firmware = metadata.receiver as Firmware
+    // Check Receiver Serial number
+    const sameSerialNumber = receiverSerialNumber.includes(frameSerialNumber)
+    if (!sameSerialNumber) return `Invalid receiver serial number ${frameSerialNumber} -> it should be ${receiverSerialNumber}`
+    if (frame.name === 'ping' || frame.name === 'serial number') return ''
+    // Check Receiver Frequency
+    const receiverFrequency: Frequency = this._receiver.frequency
+    if (frame.name === 'receiver') {
+      const { frequency }: { frequency: Frequency } = metadata.sample
+      if (frequency !== undefined && frequency !== receiverFrequency) return `Invalid receiver frequency ${frequency} -> it should be ${receiverFrequency}`
+    }
+    // Listening Emitter Frame
+    const { frequency: sampleFrequency, emitter: sampleEmitter } = metadata.sample as ListeningEmitterFrame['metadata']['sample']
+    const parsedFrequency = v.safeParse(FrequencySchema, sampleFrequency)
+    if (!parsedFrequency.success) return parsedFrequency.issues[0].message
+    const frameFrequency = parsedFrequency.output
+    if (frameFrequency !== receiverFrequency) return `Invalid receiver frequency -> received ${frameFrequency} - expected ${receiverFrequency}`
+    // Check Emitters
+    const emitters: Emitter[] | undefined = this._receiver.emitters
+    if (emitters === undefined) return ''
+    return this.checkEmitters(sampleEmitter, frameFrequency, emitters)
+  }
+
+  protected getNewFirmwareChange(): void {
+    // Check there is a new firmware change
+    const nextFirmwareChangeIndex = this._buffer.indexOf(FIRMWARE_START, FIRMWARE_START.length)
+    if (nextFirmwareChangeIndex === -1) {
+      this._buffer = ''
+      return
+    }
+    // Check  firmware change is outside an API frame
+    const nextAPIStartIndex = this._buffer.indexOf(API_START)
+    if (nextAPIStartIndex === -1 || nextFirmwareChangeIndex < nextAPIStartIndex) {
+      this._buffer = this._buffer.slice(nextFirmwareChangeIndex)
+      return
+    }
+    const nextAPIEndIndex = this._buffer.indexOf(API_END, nextAPIStartIndex)
+    if (nextAPIEndIndex === -1 || nextAPIEndIndex < nextFirmwareChangeIndex) {
+      this._buffer = this._buffer.slice(nextFirmwareChangeIndex)
+      return
+    }
+    // Firmware change is inside an API frame
+    this._buffer = this._buffer.slice(nextAPIEndIndex + API_END.length)
+    this.getNewFirmwareChange()
+  }
+
+  addData(data: string): void { this._buffer += v.parse(StringSchema, data) }
+
+  parseData(data: string = ''): OutputFrame[] {
+    if (v.parse(StringSchema, data).length > 0) {
       this.addData(data)
     }
     const timestamp = Date.now()
-    let response: TODO[] = []
-    while (this.buffer.length > 0) {
-      // Know if there is a change of mode
-      const [index, newMode] = this.getIndexChangeOfMode(this.buffer)
-      // If there is change mode
-      if (index > 0) {
-
-        const preModechange = this.buffer.slice(0, index)
-        response = [...response, ...this.parse(preModechange)]
-        response.push()
-
+    let response: FirmwareFrame[] = []
+    while (this._buffer.length > 0) {
+      const { frames, nonparsed, firmwareChange } = this._parser(this._buffer)
+      response = response.concat(frames)
+      this._buffer = nonparsed
+      // No firmware change -> finish
+      if (!firmwareChange) { break }
+      // Firmware change -> change the firmware and parse the nonparsed
+      const firmwareChangeFrame: FirmwareFrame = frames.slice(-1)[0]
+      const newFirmware: Firmware = (firmwareChangeFrame.data?.at(0) as Firmware) ?? '9.9.9'
+      const parsed = v.safeParse(FirmwareSchema, newFirmware)
+      // Non supported firmware -> find next fw change
+      if (!parsed.success) {
+        response[response.length - 1].errorFirmware = `Firmware ${newFirmware} is not supported, just ${FIRMWARES_AVAILABLE.toString()}`
+        this.getNewFirmwareChange()
+        break
       }
-      // Parse without mode change
-
+      this.firmware = newFirmware
     }
-  }
-
-  protected parse(input: string): TODO[] {
-    if (this.receiver.mode === 'listening') { return this.parseListening(input) }
-    if (this.receiver.mode === 'command') { return this.parseCommand(input) }
-    return this.parseUpdate(input)
-  }
-  // CHANGE MODE
-  // 04 - Command MODE ON  -> LIVECM
-  // 05 - Command MODE OFF -> EX!
-
-  protected getIndexChangeOfMode(input: string): [number, Mode | null] {
-    const indexListening = input.indexOf(LISTENING_MODE)
-    const indexCommand = input.indexOf(COMMAND_MODE)
-    const indexUpdate = input.indexOf(UPDATE_MODE)
-    const index = Math.max(indexListening, indexCommand, indexUpdate)
-    // No change mode
-    if (index === -1) return [-1, null]
-    // Listening mode
-    if (index === indexListening) return [indexListening, 'listening']
-    // Command mode
-    if (index === indexCommand) return [indexCommand, 'command']
-    // Update mode
-    return [indexUpdate, 'update']
-  }
-
-
-  // LISTENING MODE
-  // 00 - Emitter  sample === Acoustic detection -> $...\r
-  // 00 - Receiver sample === Log -> $...\r
-  // 01 - Ping -> SN=1234567 ><>\r
-  // 02 - Round clock -> ack01\r
-  // 03 - Set clock -> ack02\r
-
-  protected getIndexListenning(input: string): [number, ListeningFrame | null] {
-    const indexSample = input.indexOf(SAMPLE_FLAG_START)
-    const indexPing = input.indexOf(PING_FLAG_START)
-    const indexRoundClock = input.indexOf(ROUND_CLOCK_FLAG)
-    const indexSetClock = input.indexOf(SET_CLOCK_FLAG)
-    const index = Math.max(indexSample, indexPing, indexRoundClock, indexSetClock)
-    // No data
-    if (index === -1) return [-1, null]
-    // Sample
-    if (index === indexSample) return [index, 'sample']
-    // Ping
-    if (index === indexPing) return [index, 'ping']
-    // Round Clock
-    if (index === indexSample) return [index, 'roundClock']
-    // Set Clock
-    return [index, 'setClock']
-  }
-
-  protected parseListening(input: string): TODO[] {
-    let text = input
-    let response: TODO[] = []
-    while (text.length) {
-      const [index, type] = this.getIndexListenning(text)
-      
+    if (this._receiver !== null) {
+      this._receiver.mode = response.slice(-1)[0].mode
     }
-    return []
+    return response.map(frame => {
+      // Check receiver serial number and / or emitters serial number
+      if (this._receiver !== null) {
+        const errorReceiver = this.checkReceiver(frame)
+        if (errorReceiver.length > 0) {
+          return {
+            ...frame,
+            timestamp,
+            errorReceiver
+          }
+        }
+      }
+      // None receiver or none serialnumber errors
+      return { ...frame, timestamp }
+    })
   }
-
-  // COMMAND MODE
-  // 06 - Commands -> text
-  // 07 - Serial Number -> SN=1234567
-  // 08 - Firmware -> FV=[v]X.Y.Z
-  // 09 - Time -> UT=<timestamp seconds>
-  // 10 - Frequency -> FC=XY (63 - 77)
-  // 11 - Protocol -> LM=XY
-  // 12 - Log Interval -> LI=XY
-  // 13 - Restart -> RR!
-  // 14 - Factory reset -> FS!
-  // 15 - Upgrade FW -> UF!
-
-  protected parseCommand(input: string): TODO[] { return [] }
-
-  protected parseUpdate(input: string): TODO[] { return [] }
-
 }
