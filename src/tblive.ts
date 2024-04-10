@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { API_END, API_START, FIRMWARES_AVAILABLE, FIRMWARE_START } from './constants'
+import { API_END, API_START, FIRMWARES_AVAILABLE, FIRMWARE_START, MAX_BUFFER_LENGTH } from './constants'
 import { FirmwareSchema, FrequencySchema, ReceiverSchema, StringSchema } from './schemas'
 import type { Parser, Firmware, Receiver, FirmwareFrame, OutputFrame, SerialNumber, Frequency, Emitter, ListeningEmitterFrame } from './types'
 import { firmwareParser } from './firmware'
@@ -133,6 +133,11 @@ export class TBLive {
     if (this._receiver !== null) {
       this._receiver.mode = response.slice(-1)[0].mode
     }
+    // Do not over-increase internal buffer
+    if (this._buffer.length > MAX_BUFFER_LENGTH) {
+      this._buffer = this._buffer.slice(-MAX_BUFFER_LENGTH)
+    }
+    // Return response
     return response.map(frame => {
       // Check receiver serial number and / or emitters serial number
       if (this._receiver !== null) {
