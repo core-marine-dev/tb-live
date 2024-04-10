@@ -1,5 +1,5 @@
 {
-  "name": "@coreamarine/tb-live",
+  "name": "@coremarine/tb-live",
   "version": "0.0.1",
   "description": "Library to work with TB-Lives devices (hydrophones and acoustic sensors of Thelma Biotel)",
   "author": "CoreMarine",
