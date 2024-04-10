@@ -29,7 +29,8 @@
     "lint": "eslint . --ext .ts --ignore-path .gitignore",
     "format": "eslint . --ext .ts --fix --ignore-path .gitignore",
     "test": "vitest",
-    "coverage": "vitest --coverage"
+    "coverage": "vitest --coverage",
+    "build": "tsc"
   },
   "dependencies": {
     "@schemasjs/valibot-numbers": "^1.0.5",
